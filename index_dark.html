@@ -325,29 +325,67 @@
     const SUPABASE_KEY = 'sb_publishable_Q-TE31bHNgCDSDCs24PtFg_Q1r8g9vr';
     let supabaseClient = null;
 
-    if (SUPABASE_URL !== 'SUA_URL_SUPABASE') {
+    if (SUPABASE_URL && SUPABASE_URL !== 'SUA_URL_SUPABASE') {
       supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     }
 
     let db = {
-      clientes: JSON.parse(localStorage.getItem('db_clientes')) || [
-        { id: '1', nome: 'João', emoji: '😎' },
-        { id: '2', nome: 'Maria', emoji: '🤠' },
-        { id: '3', nome: 'Lucas', emoji: '🍻' }
-      ],
-      produtos: JSON.parse(localStorage.getItem('db_produtos')) || [
-        { id: 1, nome: 'Cerveja Lata', custo: 2.50, preco: 6.00 },
-        { id: 2, nome: 'Espetinho', custo: 4.00, preco: 10.00 },
-        { id: 3, nome: 'Refrigerante', custo: 2.00, preco: 5.00 }
-      ],
-      compras: JSON.parse(localStorage.getItem('db_compras')) || [],
+      clientes: [],
+      produtos: [],
+      compras: [],
       saldos: JSON.parse(localStorage.getItem('db_saldos')) || {},
-      pagamentos: JSON.parse(localStorage.getItem('db_pagamentos')) || []
+      pagamentos: []
     };
 
     let clienteAtual = null;
 
     document.getElementById('input-data-evento').value = new Date().toISOString().split('T')[0];
+
+    async function carregarDadosDoSupabase() {
+      if (!supabaseClient) {
+        db.clientes = JSON.parse(localStorage.getItem('db_clientes')) || [];
+        db.produtos = JSON.parse(localStorage.getItem('db_produtos')) || [];
+        db.compras = JSON.parse(localStorage.getItem('db_compras')) || [];
+        db.pagamentos = JSON.parse(localStorage.getItem('db_pagamentos')) || [];
+        renderizarTudo();
+        return;
+      }
+
+      try {
+        const [resClientes, resProdutos, resCompras, resPagamentos] = await Promise.all([
+          supabaseClient.from('clientes').select('*').order('nome'),
+          supabaseClient.from('produtos').select('*').order('nome'),
+          supabaseClient.from('compras').select('*').order('created_at', { ascending: false }),
+          supabaseClient.from('vendas').select('*').order('created_at', { ascending: false })
+        ]);
+
+        if (resClientes.data) db.clientes = resClientes.data;
+        if (resProdutos.data) db.produtos = resProdutos.data;
+        if (resCompras.data) {
+          db.compras = resCompras.data.map(c => ({
+            id: c.id,
+            descricao: c.descricao,
+            valor: parseFloat(c.valor),
+            data: c.data_compra ? formatarDataBR(c.data_compra) : formatarDataBR(c.created_at.split('T')[0])
+          }));
+        }
+        if (resPagamentos.data) {
+          db.pagamentos = resPagamentos.data.map(p => ({
+            id: p.id,
+            cliente: p.cliente_nome,
+            valor: parseFloat(p.total),
+            formaPagamento: p.forma_pagamento,
+            data: new Date(p.created_at).toLocaleString('pt-BR')
+          }));
+        }
+
+        salvarLocal();
+      } catch (err) {
+        console.error('Erro ao conectar ao Supabase:', err);
+      } finally {
+        renderizarTudo();
+      }
+    }
 
     function salvarLocal() {
       localStorage.setItem('db_clientes', JSON.stringify(db.clientes));
@@ -366,7 +404,7 @@
 
     function formatarDataBR(dataIso) {
       if (!dataIso) return '';
-      const partes = dataIso.split('-');
+      const partes = dataIso.split('T')[0].split('-');
       return `${partes[2]}/${partes[1]}/${partes[0]}`;
     }
 
@@ -409,7 +447,7 @@
       document.getElementById('lista-produtos-cards').innerHTML = db.produtos.map(p => `
         <button onclick="adicionarItemDirecto(${p.id})" class="p-2.5 bg-dark-850/80 border border-slate-800 hover:border-amber-500/50 rounded-xl flex flex-col justify-between items-start active:scale-95 transition-all h-16 shadow-md">
           <span class="font-bold text-slate-200 text-xs text-left line-clamp-1">${p.nome}</span>
-          <span class="text-amber-400 font-black text-xs">R$ ${p.preco.toFixed(2)}</span>
+          <span class="text-amber-400 font-black text-xs">R$ ${parseFloat(p.preco).toFixed(2)}</span>
         </button>
       `).join('');
 
@@ -429,7 +467,7 @@
         <div class="p-3.5 border border-slate-800 rounded-xl flex justify-between items-center bg-dark-850/70 text-sm">
           <div>
             <span class="font-bold text-slate-200 block">${p.nome}</span>
-            <span class="text-xs text-slate-400">Custo: R$ ${(p.custo || 0).toFixed(2)} | Venda: R$ ${p.preco.toFixed(2)}</span>
+            <span class="text-xs text-slate-400">Custo: R$ ${parseFloat(p.custo || 0).toFixed(2)} | Venda: R$ ${parseFloat(p.preco).toFixed(2)}</span>
           </div>
           <div class="flex gap-1.5">
             <button onclick="editarProduto(${p.id})" class="text-xs text-blue-400 hover:bg-blue-950 px-2 py-1 rounded-lg font-bold border border-blue-500/30">✏️</button>
@@ -459,7 +497,6 @@
       renderizarTudo();
     }
 
-    // LANÇA O CONSUMO DIRETAMENTE NA DATA DO EVENTO SELECIONADA
     function adicionarItemDirecto(produtoId) {
       if (!clienteAtual) return alert('Selecione um amigo no painel antes de clicar no produto!');
 
@@ -468,6 +505,7 @@
 
       const dataIso = document.getElementById('input-data-evento').value;
       const dataBr = formatarDataBR(dataIso);
+      const precoVal = parseFloat(prod.preco);
 
       if (!db.saldos[clienteAtual]) {
         db.saldos[clienteAtual] = { total: 0, historico: [] };
@@ -478,17 +516,16 @@
         data: dataBr,
         dataIso: dataIso,
         descricao: `1x ${prod.nome}`,
-        valor: prod.preco
+        valor: precoVal
       };
 
       db.saldos[clienteAtual].historico.unshift(novoItem);
-      db.saldos[clienteAtual].total += prod.preco;
+      db.saldos[clienteAtual].total += precoVal;
 
       salvarLocal();
       renderizarTudo();
     }
 
-    // PERMITE EXCLUIR/CANCELAR UM ITEM DA CONTA DO CLIENTE ANTES DA QUITAÇÃO
     function estornarItemConta(idItem) {
       if (!clienteAtual || !db.saldos[clienteAtual]) return;
 
@@ -541,7 +578,7 @@
       }
     }
 
-    function receberPagamento(meio) {
+    async function receberPagamento(meio) {
       if (!clienteAtual) return alert('Selecione um cliente primeiro!');
       const saldoAtual = (db.saldos[clienteAtual] && db.saldos[clienteAtual].total) || 0;
 
@@ -569,22 +606,24 @@
         };
 
         db.pagamentos.unshift(registroPagamento);
-        salvarLocal();
 
         if (supabaseClient) {
-          supabaseClient.from('vendas').insert([{
+          const clienteObj = db.clientes.find(c => c.nome === clienteAtual);
+          await supabaseClient.from('vendas').insert([{
+            cliente_id: clienteObj ? clienteObj.id : null,
             cliente_nome: clienteAtual,
             total: valorPago,
             forma_pagamento: meio
-          }]).then();
+          }]);
         }
 
+        salvarLocal();
         alert(`Pagamento de R$ ${valorPago.toFixed(2)} recebido de ${clienteAtual}!`);
-        renderizarTudo();
+        carregarDadosDoSupabase();
       }
     }
 
-    function estornarPagamento(idPagamento) {
+    async function estornarPagamento(idPagamento) {
       const pgt = db.pagamentos.find(p => p.id === idPagamento);
       if (!pgt) return;
 
@@ -600,10 +639,14 @@
         }
 
         db.pagamentos = db.pagamentos.filter(p => p.id !== idPagamento);
-        salvarLocal();
 
+        if (supabaseClient) {
+          await supabaseClient.from('vendas').delete().eq('id', idPagamento);
+        }
+
+        salvarLocal();
         alert(`Estorno de R$ ${pgt.valor.toFixed(2)} realizado com sucesso!\nA dívida de ${pgt.cliente} foi restaurada.`);
-        renderizarTudo();
+        carregarDadosDoSupabase();
       }
     }
 
@@ -631,10 +674,10 @@
     }
 
     function renderizarLucro() {
-      const totalRecebido = db.pagamentos.reduce((acc, p) => acc + p.valor, 0);
+      const totalRecebido = db.pagamentos.reduce((acc, p) => acc + (parseFloat(p.valor) || 0), 0);
       const totalFiado = Object.values(db.saldos).reduce((acc, s) => acc + (s.total || 0), 0);
       const totalVendasGeral = totalRecebido + totalFiado;
-      const totalGastos = db.compras.reduce((acc, c) => acc + c.valor, 0);
+      const totalGastos = db.compras.reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
       const lucroLiquido = totalVendasGeral - totalGastos;
 
       document.getElementById('stat-lucro-vendas').innerText = `R$ ${totalVendasGeral.toFixed(2)}`;
@@ -655,15 +698,16 @@
       }
 
       document.getElementById('tabela-margem-produtos').innerHTML = db.produtos.map(p => {
-        const custo = p.custo || 0;
-        const lucroItem = p.preco - custo;
-        const margemPct = p.preco > 0 ? ((lucroItem / p.preco) * 100).toFixed(0) : 0;
+        const custo = parseFloat(p.custo || 0);
+        const preco = parseFloat(p.preco || 0);
+        const lucroItem = preco - custo;
+        const margemPct = preco > 0 ? ((lucroItem / preco) * 100).toFixed(0) : 0;
 
         return `
           <div class="p-3.5 border border-slate-800 rounded-2xl bg-dark-850/70 text-xs flex justify-between items-center">
             <div>
               <span class="font-bold text-slate-200 text-sm block">${p.nome}</span>
-              <span class="text-slate-400">Custo: R$ ${custo.toFixed(2)} | Venda: R$ ${p.preco.toFixed(2)}</span>
+              <span class="text-slate-400">Custo: R$ ${custo.toFixed(2)} | Venda: R$ ${preco.toFixed(2)}</span>
             </div>
             <div class="text-right">
               <span class="font-black text-emerald-400 block text-sm">+R$ ${lucroItem.toFixed(2)}</span>
@@ -674,32 +718,35 @@
       }).join('');
     }
 
-    function salvarCompra(e) {
+    async function salvarCompra(e) {
       e.preventDefault();
       const desc = document.getElementById('input-desc-compra').value.trim();
       const valor = parseFloat(document.getElementById('input-valor-compra').value);
-      const dataHoje = new Date().toLocaleDateString('pt-BR');
+      const dataHoje = new Date().toISOString().split('T')[0];
 
       if (desc && valor) {
-        const novaCompra = { id: Date.now(), descricao: desc, valor: valor, data: dataHoje };
-        db.compras.unshift(novaCompra);
-        salvarLocal();
-
         if (supabaseClient) {
-          supabaseClient.from('compras').insert([{ descricao: desc, valor: valor }]).then();
+          await supabaseClient.from('compras').insert([{ descricao: desc, valor: valor, data_compra: dataHoje }]);
+        } else {
+          db.compras.unshift({ id: Date.now(), descricao: desc, valor: valor, data: formatarDataBR(dataHoje) });
+          salvarLocal();
         }
 
         document.getElementById('input-desc-compra').value = '';
         document.getElementById('input-valor-compra').value = '';
-        renderizarTudo();
+        carregarDadosDoSupabase();
       }
     }
 
-    function removerCompra(id) {
+    async function removerCompra(id) {
       if (confirm('Deseja excluir este registro de gasto?')) {
-        db.compras = db.compras.filter(c => c.id !== id);
-        salvarLocal();
-        renderizarTudo();
+        if (supabaseClient) {
+          await supabaseClient.from('compras').delete().eq('id', id);
+        } else {
+          db.compras = db.compras.filter(c => c.id !== id);
+          salvarLocal();
+        }
+        carregarDadosDoSupabase();
       }
     }
 
@@ -717,7 +764,7 @@
             <span class="text-slate-400">Comprado em ${c.data}</span>
           </div>
           <div class="flex items-center gap-3">
-            <span class="font-black text-red-400 text-sm">R$ ${c.valor.toFixed(2)}</span>
+            <span class="font-black text-red-400 text-sm">R$ ${parseFloat(c.valor).toFixed(2)}</span>
             <button onclick="removerCompra(${c.id})" class="text-red-400 hover:text-red-300">🗑️</button>
           </div>
         </div>
@@ -803,7 +850,7 @@
       let pgtsFiltrados = db.pagamentos;
       if (valFiltro) pgtsFiltrados = pgtsFiltrados.filter(p => p.cliente === valFiltro);
 
-      const totalArrecadado = pgtsFiltrados.reduce((acc, p) => acc + p.valor, 0);
+      const totalArrecadado = pgtsFiltrados.reduce((acc, p) => acc + (parseFloat(p.valor) || 0), 0);
       document.getElementById('stat-total-arrecadado').innerText = `R$ ${totalArrecadado.toFixed(2)}`;
 
       const conteiner = document.getElementById('lista-historico-pagamentos');
@@ -819,7 +866,7 @@
             <span class="text-slate-400">${p.data} • Pago via <b class="text-amber-400/90">${p.formaPagamento}</b></span>
           </div>
           <div class="flex items-center gap-3">
-            <span class="font-black text-emerald-400 text-base">R$ ${p.valor.toFixed(2)}</span>
+            <span class="font-black text-emerald-400 text-base">R$ ${parseFloat(p.valor).toFixed(2)}</span>
             <button onclick="estornarPagamento(${p.id})" class="text-xs bg-red-950/70 hover:bg-red-900 text-red-300 font-bold px-2.5 py-1.5 rounded-lg border border-red-500/30 transition-all" title="Cancelar este pagamento">
               ❌ Estornar
             </button>
@@ -828,7 +875,7 @@
       `).join('');
     }
 
-    function salvarCliente(e) {
+    async function salvarCliente(e) {
       e.preventDefault();
       const input = document.getElementById('input-nome-cliente');
       const selectEmoji = document.getElementById('select-emoji-cliente');
@@ -837,56 +884,83 @@
 
       if (nome) {
         if (db.clientes.some(c => c.nome.toLowerCase() === nome.toLowerCase())) return alert('Amigo já cadastrado!');
-        db.clientes.push({ id: String(Date.now()), nome, emoji });
-        salvarLocal();
+
+        if (supabaseClient) {
+          const { error } = await supabaseClient.from('clientes').insert([{ nome, emoji }]);
+          if (error) return alert('Erro ao cadastrar cliente no Supabase: ' + error.message);
+        } else {
+          db.clientes.push({ id: String(Date.now()), nome, emoji });
+          salvarLocal();
+        }
+
         input.value = '';
-        renderizarTudo();
+        carregarDadosDoSupabase();
       }
     }
 
-    function editarCliente(id) {
+    async function editarCliente(id) {
       const cliente = db.clientes.find(c => String(c.id) === String(id));
       if (!cliente) return;
       const novoNome = prompt('Nome do amigo:', cliente.nome);
       if (novoNome && novoNome.trim() !== '') {
         const antigo = cliente.nome;
-        cliente.nome = novoNome.trim();
+        const nomeAtualizado = novoNome.trim();
+
+        if (supabaseClient) {
+          await supabaseClient.from('clientes').update({ nome: nomeAtualizado }).eq('id', id);
+        } else {
+          cliente.nome = nomeAtualizado;
+        }
+
         if (db.saldos[antigo]) {
-          db.saldos[cliente.nome] = db.saldos[antigo];
+          db.saldos[nomeAtualizado] = db.saldos[antigo];
           delete db.saldos[antigo];
         }
+        
         salvarLocal();
-        renderizarTudo();
+        carregarDadosDoSupabase();
       }
     }
 
-    function removerCliente(id) {
+    async function removerCliente(id) {
       const cliente = db.clientes.find(c => String(c.id) === String(id));
       if (!cliente) return;
       if (confirm(`Remover ${cliente.nome}?`)) {
-        db.clientes = db.clientes.filter(c => String(c.id) !== String(id));
+        if (supabaseClient) {
+          await supabaseClient.from('clientes').delete().eq('id', id);
+        } else {
+          db.clientes = db.clientes.filter(c => String(c.id) !== String(id));
+        }
+
         delete db.saldos[cliente.nome];
         salvarLocal();
-        renderizarTudo();
+        carregarDadosDoSupabase();
       }
     }
 
-    function salvarProduto(e) {
+    async function salvarProduto(e) {
       e.preventDefault();
       const nome = document.getElementById('input-nome-prod').value.trim();
       const custo = parseFloat(document.getElementById('input-custo-prod').value) || 0;
       const preco = parseFloat(document.getElementById('input-preco-prod').value);
+
       if (nome && preco) {
-        db.produtos.push({ id: Date.now(), nome, custo, preco });
-        salvarLocal();
+        if (supabaseClient) {
+          const { error } = await supabaseClient.from('produtos').insert([{ nome, custo, preco }]);
+          if (error) return alert('Erro ao cadastrar produto no Supabase: ' + error.message);
+        } else {
+          db.produtos.push({ id: Date.now(), nome, custo, preco });
+          salvarLocal();
+        }
+
         document.getElementById('input-nome-prod').value = '';
         document.getElementById('input-custo-prod').value = '';
         document.getElementById('input-preco-prod').value = '';
-        renderizarTudo();
+        carregarDadosDoSupabase();
       }
     }
 
-    function editarProduto(id) {
+    async function editarProduto(id) {
       const prod = db.produtos.find(p => p.id === id);
       if (!prod) return;
       const novoNome = prompt('Nome:', prod.nome);
@@ -894,24 +968,39 @@
       const novoPreco = prompt('Preço de Venda (Ex: 6.00):', prod.preco);
 
       if (novoNome && novoPreco) {
-        prod.nome = novoNome.trim();
-        prod.custo = parseFloat(novoCusto) || 0;
-        prod.preco = parseFloat(novoPreco);
-        salvarLocal();
-        renderizarTudo();
+        const payload = {
+          nome: novoNome.trim(),
+          custo: parseFloat(novoCusto) || 0,
+          preco: parseFloat(novoPreco)
+        };
+
+        if (supabaseClient) {
+          await supabaseClient.from('produtos').update(payload).eq('id', id);
+        } else {
+          prod.nome = payload.nome;
+          prod.custo = payload.custo;
+          prod.preco = payload.preco;
+          salvarLocal();
+        }
+
+        carregarDadosDoSupabase();
       }
     }
 
-    function removerProduto(id) {
+    async function removerProduto(id) {
       if (confirm('Remover produto?')) {
-        db.produtos = db.produtos.filter(p => p.id !== id);
-        salvarLocal();
-        renderizarTudo();
+        if (supabaseClient) {
+          await supabaseClient.from('produtos').delete().eq('id', id);
+        } else {
+          db.produtos = db.produtos.filter(p => p.id !== id);
+          salvarLocal();
+        }
+        carregarDadosDoSupabase();
       }
     }
 
     preencherSelectEmojis();
-    renderizarTudo();
+    carregarDadosDoSupabase();
   </script>
 </body>
 </html>
