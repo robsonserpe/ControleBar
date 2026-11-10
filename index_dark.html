@@ -30,7 +30,6 @@
               500: '#eab308',
               600: '#ca8a04',
               700: '#a16207',
-              gradient: 'linear-gradient(135deg, #fef08a 0%, #d4af37 50%, #9a7b1c 100%)',
             },
             dark: {
               950: '#070a0f',
@@ -69,7 +68,7 @@
 <body class="h-screen flex flex-col no-select overflow-hidden text-slate-100">
 
   <!-- BARRA DE NAVEGAÇÃO SUPERIOR -->
-  <header class="bg-dark-900 border-b border-gold-600/30 p-2.5 md:p-3 shadow-2xl flex justify-between items-center flex-wrap gap-2 z-10">
+  <header class="bg-dark-900 border-b border-amber-500/20 p-2.5 md:p-3 shadow-2xl flex justify-between items-center flex-wrap gap-2 z-10">
     <div class="flex items-center gap-2.5">
       <div class="p-2 rounded-xl bg-gradient-to-br from-amber-400 to-amber-700 shadow-lg shadow-amber-500/20">
         <i data-lucide="crown" class="text-dark-950 w-5 h-5 stroke-[2.5]"></i>
@@ -125,14 +124,14 @@
           
           <div class="flex justify-between items-center pt-1">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">2. Selecione o Amigo</span>
-            <span class="text-[11px] text-amber-500/60 font-medium">Toque para selecionar</span>
+            <span class="text-[11px] text-amber-500/60 font-medium">Toque para ver a comanda</span>
           </div>
           <div id="grid-clientes-emojis" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 max-h-[210px] md:max-h-[240px] overflow-y-auto pr-1"></div>
         </div>
 
         <div class="p-3.5 flex-1 overflow-y-auto bg-dark-950/40">
           <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-            <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-amber-400"></i> 3. Marcar Consumo Direto
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-amber-400"></i> 3. Lançar Consumo na Comanda
           </label>
           <div id="lista-produtos-cards" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5"></div>
         </div>
@@ -157,16 +156,16 @@
 
         <div class="flex-1 overflow-y-auto p-3.5 space-y-3.5">
           <div>
-            <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider block mb-1.5">Extrato de Consumo Acumulado:</span>
+            <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider block mb-1.5">Itens em Aberto na Comanda:</span>
             <div id="historico-debitos-cliente" class="space-y-2 max-h-72 overflow-y-auto pr-1">
-              <p class="text-slate-500 text-xs italic">Selecione um amigo para ver a conta.</p>
+              <p class="text-slate-500 text-xs italic">Selecione um amigo para ver a comanda.</p>
             </div>
           </div>
         </div>
 
         <div class="p-3.5 border-t border-amber-500/10 bg-dark-900/80 space-y-2.5">
           <div class="flex justify-between items-center font-bold text-slate-100 px-1">
-            <span class="text-xs text-slate-400">Total a Receber do Cliente:</span>
+            <span class="text-xs text-slate-400">Total Acumulado a Receber:</span>
             <span id="total-hoje" class="text-lg text-amber-400 font-extrabold">R$ 0,00</span>
           </div>
 
@@ -192,7 +191,6 @@
         </div>
       </div>
 
-      <!-- CARDS DE MÉTRICAS -->
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div class="p-4 bg-dark-850 border border-blue-500/30 rounded-2xl shadow-lg">
           <p class="text-xs text-blue-400 font-extrabold uppercase tracking-wider">Total Vendido (Geral)</p>
@@ -212,7 +210,6 @@
         </div>
       </div>
 
-      <!-- CARD DESTACADO DE LUCRO LÍQUIDO -->
       <div id="card-lucro-liquido" class="p-5 bg-gradient-to-r from-emerald-950/80 to-dark-850 border-2 border-emerald-500/50 rounded-2xl mb-6 flex justify-between items-center shadow-2xl">
         <div>
           <p class="text-xs font-black uppercase text-emerald-400 tracking-widest">LUCRO LÍQUIDO REAL DA OPERAÇÃO</p>
@@ -333,7 +330,7 @@
       clientes: [],
       produtos: [],
       compras: [],
-      saldos: JSON.parse(localStorage.getItem('db_saldos')) || {},
+      saldos: {},
       pagamentos: []
     };
 
@@ -341,22 +338,25 @@
 
     document.getElementById('input-data-evento').value = new Date().toISOString().split('T')[0];
 
+    // CARREGA CLIENTES, PRODUTOS, COMPRAS, PAGAMENTOS E COMANDAS EM ABERTO DO SUPABASE
     async function carregarDadosDoSupabase() {
       if (!supabaseClient) {
         db.clientes = JSON.parse(localStorage.getItem('db_clientes')) || [];
         db.produtos = JSON.parse(localStorage.getItem('db_produtos')) || [];
         db.compras = JSON.parse(localStorage.getItem('db_compras')) || [];
+        db.saldos = JSON.parse(localStorage.getItem('db_saldos')) || {};
         db.pagamentos = JSON.parse(localStorage.getItem('db_pagamentos')) || [];
         renderizarTudo();
         return;
       }
 
       try {
-        const [resClientes, resProdutos, resCompras, resPagamentos] = await Promise.all([
+        const [resClientes, resProdutos, resCompras, resPagamentos, resComandas] = await Promise.all([
           supabaseClient.from('clientes').select('*').order('nome'),
           supabaseClient.from('produtos').select('*').order('nome'),
           supabaseClient.from('compras').select('*').order('created_at', { ascending: false }),
-          supabaseClient.from('vendas').select('*').order('created_at', { ascending: false })
+          supabaseClient.from('vendas').select('*').order('created_at', { ascending: false }),
+          supabaseClient.from('comandas').select('*').order('created_at', { ascending: false })
         ]);
 
         if (resClientes.data) db.clientes = resClientes.data;
@@ -379,12 +379,43 @@
           }));
         }
 
+        // Reconstrói as comandas dinamicamente
+        db.saldos = {};
+        if (resComandas.data) {
+          resComandas.data.forEach(item => {
+            if (!db.saldos[item.cliente_nome]) {
+              db.saldos[item.cliente_nome] = { total: 0, historico: [] };
+            }
+            const val = parseFloat(item.valor);
+            db.saldos[item.cliente_nome].total += val;
+            db.saldos[item.cliente_nome].historico.push({
+              idItem: item.id,
+              data: formatarDataBR(item.data_evento),
+              dataIso: item.data_evento,
+              descricao: item.produto_nome,
+              valor: val
+            });
+          });
+        }
+
         salvarLocal();
       } catch (err) {
-        console.error('Erro ao conectar ao Supabase:', err);
+        console.error('Erro ao carregar do Supabase:', err);
       } finally {
         renderizarTudo();
       }
+    }
+
+    // ATIVA A ESCUTA EM TEMPO REAL PARA ATUALIZAR TODOS OS DISPOSITIVOS
+    function escutarAlteracoesRealtime() {
+      if (!supabaseClient) return;
+
+      supabaseClient
+        .channel('mudancas-comandas')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'comandas' }, () => {
+          carregarDadosDoSupabase();
+        })
+        .subscribe();
     }
 
     function salvarLocal() {
@@ -497,49 +528,62 @@
       renderizarTudo();
     }
 
-    function adicionarItemDirecto(produtoId) {
+    // INSERE O CONSUMO DIRETAMENTE NA TABELA 'COMANDAS' DO SUPABASE
+    async function adicionarItemDirecto(produtoId) {
       if (!clienteAtual) return alert('Selecione um amigo no painel antes de clicar no produto!');
 
       const prod = db.produtos.find(p => p.id === produtoId);
       if (!prod) return;
 
       const dataIso = document.getElementById('input-data-evento').value;
-      const dataBr = formatarDataBR(dataIso);
-      const precoVal = parseFloat(prod.preco);
 
-      if (!db.saldos[clienteAtual]) {
-        db.saldos[clienteAtual] = { total: 0, historico: [] };
+      if (supabaseClient) {
+        const { error } = await supabaseClient.from('comandas').insert([{
+          cliente_nome: clienteAtual,
+          produto_id: prod.id,
+          produto_nome: `1x ${prod.nome}`,
+          valor: prod.preco,
+          data_evento: dataIso
+        }]);
+
+        if (error) return alert('Erro ao registrar item no Supabase: ' + error.message);
+        carregarDadosDoSupabase();
+      } else {
+        const precoVal = parseFloat(prod.preco);
+        const dataBr = formatarDataBR(dataIso);
+        if (!db.saldos[clienteAtual]) db.saldos[clienteAtual] = { total: 0, historico: [] };
+        db.saldos[clienteAtual].historico.unshift({
+          idItem: Date.now(),
+          data: dataBr,
+          dataIso: dataIso,
+          descricao: `1x ${prod.nome}`,
+          valor: precoVal
+        });
+        db.saldos[clienteAtual].total += precoVal;
+        salvarLocal();
+        renderizarTudo();
       }
-
-      const novoItem = {
-        idItem: Date.now() + Math.random(),
-        data: dataBr,
-        dataIso: dataIso,
-        descricao: `1x ${prod.nome}`,
-        valor: precoVal
-      };
-
-      db.saldos[clienteAtual].historico.unshift(novoItem);
-      db.saldos[clienteAtual].total += precoVal;
-
-      salvarLocal();
-      renderizarTudo();
     }
 
-    function estornarItemConta(idItem) {
+    // EXCLUI UM ITEM DA COMANDA NO SUPABASE
+    async function estornarItemConta(idItem) {
       if (!clienteAtual || !db.saldos[clienteAtual]) return;
 
       const historico = db.saldos[clienteAtual].historico || [];
       const item = historico.find(h => h.idItem === idItem);
 
-      if (item && confirm(`Remover "${item.descricao}" (${item.data}) de R$ ${item.valor.toFixed(2)} da conta de ${clienteAtual}?`)) {
-        db.saldos[clienteAtual].total -= item.valor;
-        if (db.saldos[clienteAtual].total < 0) db.saldos[clienteAtual].total = 0;
-
-        db.saldos[clienteAtual].historico = historico.filter(h => h.idItem !== idItem);
-        
-        salvarLocal();
-        renderizarTudo();
+      if (item && confirm(`Remover "${item.descricao}" (${item.data}) de R$ ${item.valor.toFixed(2)} da comanda de ${clienteAtual}?`)) {
+        if (supabaseClient) {
+          const { error } = await supabaseClient.from('comandas').delete().eq('id', idItem);
+          if (error) return alert('Erro ao excluir do Supabase: ' + error.message);
+          carregarDadosDoSupabase();
+        } else {
+          db.saldos[clienteAtual].total -= item.valor;
+          if (db.saldos[clienteAtual].total < 0) db.saldos[clienteAtual].total = 0;
+          db.saldos[clienteAtual].historico = historico.filter(h => h.idItem !== idItem);
+          salvarLocal();
+          renderizarTudo();
+        }
       }
     }
 
@@ -578,6 +622,7 @@
       }
     }
 
+    // REGISTRA O PAGAMENTO E LIMPA A COMANDA DO SUPABASE
     async function receberPagamento(meio) {
       if (!clienteAtual) return alert('Selecione um cliente primeiro!');
       const saldoAtual = (db.saldos[clienteAtual] && db.saldos[clienteAtual].total) || 0;
@@ -588,38 +633,22 @@
       const valorPago = parseFloat(valorPagoInput);
 
       if (valorPago && !isNaN(valorPago) && valorPago > 0) {
-        const historicoBackup = JSON.parse(JSON.stringify(db.saldos[clienteAtual].historico || []));
-
-        db.saldos[clienteAtual].total -= valorPago;
-        if (db.saldos[clienteAtual].total <= 0) {
-          db.saldos[clienteAtual].total = 0;
-          db.saldos[clienteAtual].historico = []; 
-        }
-
-        const registroPagamento = {
-          id: Date.now(),
-          cliente: clienteAtual,
-          data: new Date().toLocaleString('pt-BR'),
-          valor: valorPago,
-          formaPagamento: meio,
-          historicoBackup: historicoBackup
-        };
-
-        db.pagamentos.unshift(registroPagamento);
-
         if (supabaseClient) {
           const clienteObj = db.clientes.find(c => c.nome === clienteAtual);
+          
           await supabaseClient.from('vendas').insert([{
             cliente_id: clienteObj ? clienteObj.id : null,
             cliente_nome: clienteAtual,
             total: valorPago,
             forma_pagamento: meio
           }]);
-        }
 
-        salvarLocal();
-        alert(`Pagamento de R$ ${valorPago.toFixed(2)} recebido de ${clienteAtual}!`);
-        carregarDadosDoSupabase();
+          // Limpa os itens da comanda no banco
+          await supabaseClient.from('comandas').delete().eq('cliente_nome', clienteAtual);
+
+          alert(`Pagamento de R$ ${valorPago.toFixed(2)} recebido de ${clienteAtual}!`);
+          carregarDadosDoSupabase();
+        }
       }
     }
 
@@ -627,25 +656,13 @@
       const pgt = db.pagamentos.find(p => p.id === idPagamento);
       if (!pgt) return;
 
-      if (confirm(`Deseja CANCELAR/ESTORNAR o pagamento de R$ ${pgt.valor.toFixed(2)} de ${pgt.cliente}?\nO valor voltará para a dívida do cliente.`)) {
-        if (!db.saldos[pgt.cliente]) {
-          db.saldos[pgt.cliente] = { total: 0, historico: [] };
-        }
-        
-        db.saldos[pgt.cliente].total += pgt.valor;
-
-        if (pgt.historicoBackup && pgt.historicoBackup.length > 0) {
-          db.saldos[pgt.cliente].historico = pgt.historicoBackup;
-        }
-
-        db.pagamentos = db.pagamentos.filter(p => p.id !== idPagamento);
-
+      if (confirm(`Deseja CANCELAR/ESTORNAR o pagamento de R$ ${pgt.valor.toFixed(2)} de ${pgt.cliente}?\nO valor voltará para a comanda do cliente.`)) {
         if (supabaseClient) {
           await supabaseClient.from('vendas').delete().eq('id', idPagamento);
         }
 
         salvarLocal();
-        alert(`Estorno de R$ ${pgt.valor.toFixed(2)} realizado com sucesso!\nA dívida de ${pgt.cliente} foi restaurada.`);
+        alert(`Estorno de R$ ${pgt.valor.toFixed(2)} realizado com sucesso!`);
         carregarDadosDoSupabase();
       }
     }
@@ -1001,6 +1018,7 @@
 
     preencherSelectEmojis();
     carregarDadosDoSupabase();
+    escutarAlteracoesRealtime();
   </script>
 </body>
 </html>
