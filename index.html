@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vendas de Domingo - Club Deluxe</title>
+  
+  <!-- CONFIGURAÇÕES DE APP NATIVO (PWA) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0b0f17">
+  
+  <!-- MANIFEST EMBUTIDO PARA PERMITIR INSTALAÇÃO COMO APP -->
+  <link rel="manifest" href='data:application/manifest+json,{"name":"Vendas de Domingo","short_name":"Vendas VIP","start_url":"./index.html","display":"standalone","background_color":"#070a0f","theme_color":"#0b0f17","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2983/2983780.png","sizes":"512x512","type":"image/png"}]}'>
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
@@ -111,9 +121,8 @@
     <!-- ABA 1: COMANDAS -->
     <div id="aba-comandas" class="h-full grid grid-cols-1 md:grid-cols-12 gap-3.5 overflow-y-auto md:overflow-hidden">
       
-      <!-- PAINEL ESQUERDO: SELEÇÃO DE CLIENTE E PRODUTOS -->
+      <!-- PAINEL ESQUERDO -->
       <div class="md:col-span-7 glass-card rounded-2xl flex flex-col min-h-[360px] md:h-full overflow-hidden shadow-2xl">
-        
         <div class="p-3.5 border-b border-amber-500/10 bg-dark-900/60 space-y-2.5">
           <div class="flex justify-between items-center">
             <label class="block text-xs font-extrabold text-amber-400/90 uppercase tracking-widest flex items-center gap-1.5">
@@ -137,9 +146,8 @@
         </div>
       </div>
 
-      <!-- PAINEL DIREITO: EXTRATO DA COMANDA E PAGAMENTO -->
+      <!-- PAINEL DIREITO -->
       <div class="md:col-span-5 glass-card rounded-2xl flex flex-col min-h-[360px] md:h-full overflow-hidden shadow-2xl">
-        
         <div class="p-3.5 border-b border-amber-500/10 bg-dark-900/60 flex justify-between items-center">
           <div>
             <p id="nome-cliente-comanda" class="text-sm text-slate-100 font-bold flex items-center gap-1.5">
@@ -168,11 +176,8 @@
             <span class="text-xs text-slate-400">Total Acumulado a Receber:</span>
             <span id="total-hoje" class="text-lg text-amber-400 font-extrabold">R$ 0,00</span>
           </div>
-
           <hr class="border-slate-800/80 my-1">
-
           <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider text-center">Registrar Acerto de Conta:</p>
-
           <div class="grid grid-cols-3 gap-2">
             <button onclick="receberPagamento('Pix')" class="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md active:scale-95 text-xs border border-emerald-400/30 transition-all">PIX</button>
             <button onclick="receberPagamento('Dinheiro')" class="py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-md active:scale-95 text-xs border border-blue-400/30 transition-all">Dinheiro</button>
@@ -182,7 +187,7 @@
       </div>
     </div>
 
-    <!-- ABA 2: LUCRO REAL & FINANCEIRO -->
+    <!-- ABA 2: LUCRO -->
     <div id="aba-lucro" class="h-full hidden glass-card rounded-2xl p-4 md:p-6 overflow-y-auto">
       <div class="flex justify-between items-center mb-6 border-b border-amber-500/10 pb-4">
         <div>
@@ -190,7 +195,6 @@
           <p class="text-xs text-slate-400 mt-1">Visão completa de faturamento, caixa, fiados e lucro real da operação</p>
         </div>
       </div>
-
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div class="p-4 bg-dark-850 border border-blue-500/30 rounded-2xl shadow-lg">
           <p class="text-xs text-blue-400 font-extrabold uppercase tracking-wider">Total Vendido (Geral)</p>
@@ -209,7 +213,6 @@
           <p id="stat-lucro-gastos" class="text-2xl font-black text-red-300 mt-1">R$ 0,00</p>
         </div>
       </div>
-
       <div id="card-lucro-liquido" class="p-5 bg-gradient-to-r from-emerald-950/80 to-dark-850 border-2 border-emerald-500/50 rounded-2xl mb-6 flex justify-between items-center shadow-2xl">
         <div>
           <p class="text-xs font-black uppercase text-emerald-400 tracking-widest">LUCRO LÍQUIDO REAL DA OPERAÇÃO</p>
@@ -217,25 +220,23 @@
         </div>
         <p id="stat-lucro-liquido" class="text-3xl font-black text-emerald-300">R$ 0,00</p>
       </div>
-
       <h3 class="font-bold text-amber-400/90 mb-3 text-xs uppercase tracking-widest">Margem de Lucro Bruto por Item</h3>
       <div id="tabela-margem-produtos" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
     </div>
 
-    <!-- ABA 3: COMPRAS / GASTOS -->
+    <!-- ABA 3: COMPRAS -->
     <div id="aba-compras" class="h-full hidden glass-card rounded-2xl p-4 md:p-6 overflow-y-auto">
       <h2 class="text-xl font-extrabold text-amber-400 mb-4">Lançar Gastos e Compras de Insumos</h2>
       <form onsubmit="salvarCompra(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6 max-w-2xl">
         <input type="text" id="input-desc-compra" placeholder="Ex: Fardo Cerveja 12un / Carvão" required class="sm:col-span-2 p-3 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-sm">
         <input type="number" step="0.01" id="input-valor-compra" placeholder="Valor (Ex: 35.00)" required class="p-3 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-sm">
-        <button type="submit" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-dark-950 font-bold px-5 py-3 rounded-xl text-sm shadow-md transition-all">Lançar Gasto</button>
+        <button type="submit" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-dark-950 font-bold px-5 py-3 rounded-xl text-sm shadow-md transition-all">Lançar Gasto</button>
       </form>
-      
       <h3 class="font-bold text-slate-300 mb-3 text-sm">Histórico de Compras Registradas</h3>
       <div id="lista-compras-registradas" class="space-y-2 max-w-2xl"></div>
     </div>
 
-    <!-- ABA 4: FIADOS POR DATA -->
+    <!-- ABA 4: DEVEDORES -->
     <div id="aba-devedores" class="h-full hidden glass-card rounded-2xl p-4 md:p-6 overflow-y-auto">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-amber-500/10 pb-4">
         <div>
@@ -255,11 +256,10 @@
           </div>
         </div>
       </div>
-
       <div id="lista-saldos-devedores" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
     </div>
 
-    <!-- ABA 5: HISTÓRICO DE PAGAMENTOS COM ESTORNO -->
+    <!-- ABA 5: HISTÓRICO -->
     <div id="aba-historico" class="h-full hidden glass-card rounded-2xl p-4 md:p-6 overflow-y-auto">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-amber-500/10 pb-4">
         <div>
@@ -270,14 +270,12 @@
           <option value="">Todos os clientes</option>
         </select>
       </div>
-
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div class="p-4 bg-emerald-950/40 border border-emerald-500/30 rounded-2xl">
           <p class="text-xs text-emerald-400 font-bold uppercase tracking-wider">Total Já Arrecadado</p>
           <p id="stat-total-arrecadado" class="text-2xl font-black text-emerald-300 mt-1">R$ 0,00</p>
         </div>
       </div>
-
       <div id="lista-historico-pagamentos" class="space-y-2.5"></div>
     </div>
 
@@ -309,6 +307,16 @@
   </main>
 
   <script>
+    // SCRIPT DE ATIVAÇÃO DO PWA (APP NATIVO)
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        self.addEventListener('install', e => self.skipWaiting());
+        self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));
+      `;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+    }
+
     const EMOJIS = [
       '😎', '🤠', '🥳', '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', 
       '🙃', '😉', '😇', '😍', '🤩', '😘', '😋', '😜', '🤪', '🤖', '👻', '👽', 
@@ -338,7 +346,6 @@
 
     document.getElementById('input-data-evento').value = new Date().toISOString().split('T')[0];
 
-    // CARREGA CLIENTES, PRODUTOS, COMPRAS, PAGAMENTOS E COMANDAS EM ABERTO DO SUPABASE
     async function carregarDadosDoSupabase() {
       if (!supabaseClient) {
         db.clientes = JSON.parse(localStorage.getItem('db_clientes')) || [];
@@ -379,7 +386,6 @@
           }));
         }
 
-        // Reconstrói as comandas dinamicamente
         db.saldos = {};
         if (resComandas.data) {
           resComandas.data.forEach(item => {
@@ -406,7 +412,6 @@
       }
     }
 
-    // ATIVA A ESCUTA EM TEMPO REAL PARA ATUALIZAR TODOS OS DISPOSITIVOS
     function escutarAlteracoesRealtime() {
       if (!supabaseClient) return;
 
@@ -450,7 +455,6 @@
     }
 
     function renderizarTudo() {
-      // 1. GRID DE CLIENTES
       const gridClientes = document.getElementById('grid-clientes-emojis');
       gridClientes.innerHTML = db.clientes.map(c => {
         const isSelected = c.nome === clienteAtual;
@@ -474,7 +478,6 @@
         `;
       }).join('');
 
-      // 2. GRID DE PRODUTOS
       document.getElementById('lista-produtos-cards').innerHTML = db.produtos.map(p => `
         <button onclick="adicionarItemDirecto(${p.id})" class="p-2.5 bg-dark-850/80 border border-slate-800 hover:border-amber-500/50 rounded-xl flex flex-col justify-between items-start active:scale-95 transition-all h-16 shadow-md">
           <span class="font-bold text-slate-200 text-xs text-left line-clamp-1">${p.nome}</span>
@@ -482,7 +485,6 @@
         </button>
       `).join('');
 
-      // LISTA DA ABA CLIENTES
       document.getElementById('lista-clientes-cadastrados').innerHTML = db.clientes.map(c => `
         <li class="p-3.5 flex justify-between items-center text-sm font-medium bg-dark-900/60">
           <span class="flex items-center gap-2.5"><span class="text-2xl">${c.emoji}</span> ${c.nome}</span>
@@ -493,7 +495,6 @@
         </li>
       `).join('');
 
-      // LISTA DA ABA PRODUTOS
       document.getElementById('lista-produtos-cadastrados').innerHTML = db.produtos.map(p => `
         <div class="p-3.5 border border-slate-800 rounded-xl flex justify-between items-center bg-dark-850/70 text-sm">
           <div>
@@ -528,7 +529,6 @@
       renderizarTudo();
     }
 
-    // INSERE O CONSUMO DIRETAMENTE NA TABELA 'COMANDAS' DO SUPABASE
     async function adicionarItemDirecto(produtoId) {
       if (!clienteAtual) return alert('Selecione um amigo no painel antes de clicar no produto!');
 
@@ -565,7 +565,6 @@
       }
     }
 
-    // EXCLUI UM ITEM DA COMANDA NO SUPABASE
     async function estornarItemConta(idItem) {
       if (!clienteAtual || !db.saldos[clienteAtual]) return;
 
@@ -622,7 +621,6 @@
       }
     }
 
-    // REGISTRA O PAGAMENTO E LIMPA A COMANDA DO SUPABASE
     async function receberPagamento(meio) {
       if (!clienteAtual) return alert('Selecione um cliente primeiro!');
       const saldoAtual = (db.saldos[clienteAtual] && db.saldos[clienteAtual].total) || 0;
@@ -643,7 +641,6 @@
             forma_pagamento: meio
           }]);
 
-          // Limpa os itens da comanda no banco
           await supabaseClient.from('comandas').delete().eq('cliente_nome', clienteAtual);
 
           alert(`Pagamento de R$ ${valorPago.toFixed(2)} recebido de ${clienteAtual}!`);
