@@ -224,16 +224,40 @@
       <div id="tabela-margem-produtos" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
     </div>
 
-    <!-- ABA 3: COMPRAS -->
+    <!-- ABA 3: COMPRAS / GASTOS (ATUALIZADA COM QUANTIDADE E TOTAL DOS ITENS) -->
     <div id="aba-compras" class="h-full hidden glass-card rounded-2xl p-4 md:p-6 overflow-y-auto">
-      <h2 class="text-xl font-extrabold text-amber-400 mb-4">Lançar Gastos e Compras de Insumos</h2>
-      <form onsubmit="salvarCompra(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6 max-w-2xl">
-        <input type="text" id="input-desc-compra" placeholder="Ex: Fardo Cerveja 12un / Carvão" required class="sm:col-span-2 p-3 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-sm">
-        <input type="number" step="0.01" id="input-valor-compra" placeholder="Valor (Ex: 35.00)" required class="p-3 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-sm">
-        <button type="submit" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-dark-950 font-bold px-5 py-3 rounded-xl text-sm shadow-md transition-all">Lançar Gasto</button>
+      <div class="flex justify-between items-center mb-4 border-b border-amber-500/10 pb-3">
+        <h2 class="text-xl font-extrabold text-amber-400">Lançar Gastos e Compras de Insumos</h2>
+        <div class="p-3 bg-red-950/60 border border-red-500/30 rounded-xl text-right">
+          <p class="text-[10px] text-red-400 font-extrabold uppercase tracking-wider">Total Geral de Compras</p>
+          <p id="stat-total-compras-geral" class="text-xl font-black text-red-300">R$ 0,00</p>
+        </div>
+      </div>
+
+      <form onsubmit="salvarCompra(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-6 bg-dark-950/60 p-4 border border-slate-800 rounded-2xl">
+        <div class="sm:col-span-5">
+          <label class="block text-xs font-bold text-slate-400 mb-1">Descrição do Item/Produto</label>
+          <input type="text" id="input-desc-compra" placeholder="Ex: Fardo Cerveja 12un / Carvão" required class="w-full p-2.5 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-sm">
+        </div>
+        
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-bold text-slate-400 mb-1">Qtd</label>
+          <input type="number" min="1" step="1" id="input-qtd-compra" value="1" oninput="calcularTotalItemCompra()" required class="w-full p-2.5 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-amber-400 text-sm text-center">
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-bold text-slate-400 mb-1">Valor Unit. (R$)</label>
+          <input type="number" step="0.01" id="input-valor-unit-compra" placeholder="Ex: 12.50" oninput="calcularTotalItemCompra()" required class="w-full p-2.5 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-amber-400 text-sm">
+        </div>
+
+        <div class="sm:col-span-3 flex flex-col justify-end">
+          <span class="text-[10px] text-slate-400 font-bold uppercase mb-1">Total do Item: <b id="label-total-item-compra" class="text-amber-400 text-xs">R$ 0,00</b></span>
+          <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-dark-950 font-bold py-2.5 rounded-xl text-xs shadow-md transition-all">Lançar Compra</button>
+        </div>
       </form>
+
       <h3 class="font-bold text-slate-300 mb-3 text-sm">Histórico de Compras Registradas</h3>
-      <div id="lista-compras-registradas" class="space-y-2 max-w-2xl"></div>
+      <div id="lista-compras-registradas" class="space-y-2 max-w-4xl"></div>
     </div>
 
     <!-- ABA 4: DEVEDORES -->
@@ -372,7 +396,9 @@
           db.compras = resCompras.data.map(c => ({
             id: c.id,
             descricao: c.descricao,
-            valor: parseFloat(c.valor),
+            quantidade: parseInt(c.quantidade || 1),
+            valorUnitario: parseFloat(c.valor_unitario || c.valor || 0),
+            valor: parseFloat(c.valor || 0),
             data: c.data_compra ? formatarDataBR(c.data_compra) : formatarDataBR(c.created_at.split('T')[0])
           }));
         }
@@ -732,22 +758,49 @@
       }).join('');
     }
 
+    // CÁLCULO DINÂMICO DE COMPRAS
+    function calcularTotalItemCompra() {
+      const qtd = parseInt(document.getElementById('input-qtd-compra').value) || 0;
+      const unit = parseFloat(document.getElementById('input-valor-unit-compra').value) || 0;
+      const total = qtd * unit;
+      document.getElementById('label-total-item-compra').innerText = `R$ ${total.toFixed(2)}`;
+    }
+
+    // SALVA A COMPRA NO SUPABASE COM QUANTIDADE E VALOR TOTAL
     async function salvarCompra(e) {
       e.preventDefault();
       const desc = document.getElementById('input-desc-compra').value.trim();
-      const valor = parseFloat(document.getElementById('input-valor-compra').value);
+      const qtd = parseInt(document.getElementById('input-qtd-compra').value) || 1;
+      const valUnit = parseFloat(document.getElementById('input-valor-unit-compra').value) || 0;
+      const totalItem = qtd * valUnit;
       const dataHoje = new Date().toISOString().split('T')[0];
 
-      if (desc && valor) {
+      if (desc && totalItem > 0) {
         if (supabaseClient) {
-          await supabaseClient.from('compras').insert([{ descricao: desc, valor: valor, data_compra: dataHoje }]);
+          const { error } = await supabaseClient.from('compras').insert([{
+            descricao: desc,
+            quantidade: qtd,
+            valor_unitario: valUnit,
+            valor: totalItem,
+            data_compra: dataHoje
+          }]);
+          if (error) return alert('Erro ao salvar compra no Supabase: ' + error.message);
         } else {
-          db.compras.unshift({ id: Date.now(), descricao: desc, valor: valor, data: formatarDataBR(dataHoje) });
+          db.compras.unshift({
+            id: Date.now(),
+            descricao: desc,
+            quantidade: qtd,
+            valorUnitario: valUnit,
+            valor: totalItem,
+            data: formatarDataBR(dataHoje)
+          });
           salvarLocal();
         }
 
         document.getElementById('input-desc-compra').value = '';
-        document.getElementById('input-valor-compra').value = '';
+        document.getElementById('input-qtd-compra').value = '1';
+        document.getElementById('input-valor-unit-compra').value = '';
+        document.getElementById('label-total-item-compra').innerText = 'R$ 0,00';
         carregarDadosDoSupabase();
       }
     }
@@ -766,6 +819,9 @@
 
     function renderizarCompras() {
       const conteiner = document.getElementById('lista-compras-registradas');
+      const totalGeral = db.compras.reduce((acc, c) => acc + (parseFloat(c.valor) || 0), 0);
+      document.getElementById('stat-total-compras-geral').innerText = `R$ ${totalGeral.toFixed(2)}`;
+
       if (db.compras.length === 0) {
         conteiner.innerHTML = '<p class="text-slate-500 text-xs italic">Nenhuma compra/gasto registrado ainda.</p>';
         return;
@@ -775,7 +831,7 @@
         <div class="p-3.5 border border-slate-800 rounded-xl bg-dark-850/70 flex justify-between items-center text-xs">
           <div>
             <span class="font-bold text-slate-200 text-sm block">${c.descricao}</span>
-            <span class="text-slate-400">Comprado em ${c.data}</span>
+            <span class="text-slate-400">${c.quantidade || 1}x R$ ${(c.valorUnitario || c.valor).toFixed(2)} • Comprado em ${c.data}</span>
           </div>
           <div class="flex items-center gap-3">
             <span class="font-black text-red-400 text-sm">R$ ${parseFloat(c.valor).toFixed(2)}</span>
