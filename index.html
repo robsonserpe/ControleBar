@@ -55,8 +55,7 @@
   </script>
 
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; touch-action: manipulation; background-color: #070a0f; color: #f1f5f9; }
-    .no-select { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #070a0f; color: #f1f5f9; }
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: #0b0f17; }
     ::-webkit-scrollbar-thumb { background: #232f48; border-radius: 4px; }
@@ -75,7 +74,7 @@
     }
   </style>
 </head>
-<body class="h-screen flex flex-col no-select overflow-hidden text-slate-100">
+<body class="min-h-screen md:h-screen flex flex-col text-slate-100">
 
   <!-- BARRA DE NAVEGAÇÃO SUPERIOR -->
   <header class="bg-dark-900 border-b border-amber-500/20 p-2.5 md:p-3 shadow-2xl flex justify-between items-center flex-wrap gap-2 z-10">
@@ -90,65 +89,65 @@
     </div>
 
     <!-- BOTÕES DE NAVEGAÇÃO -->
-    <nav class="flex gap-1 md:gap-2 overflow-x-auto py-1">
-      <button onclick="mudarAba('comandas')" id="btn-comandas" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-gradient-to-r from-amber-500 to-amber-600 text-dark-950 shadow-md shadow-amber-500/20">
+    <nav class="flex gap-1 md:gap-2 overflow-x-auto py-1 w-full md:w-auto">
+      <button onclick="mudarAba('comandas')" id="btn-comandas" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-gradient-to-r from-amber-500 to-amber-600 text-dark-950 shadow-md shadow-amber-500/20 flex-shrink-0">
         <i data-lucide="shopping-bag" class="w-4 h-4"></i> Comandas
       </button>
-      <button onclick="mudarAba('lucro')" id="btn-lucro" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800">
+      <button onclick="mudarAba('lucro')" id="btn-lucro" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800 flex-shrink-0">
         <i data-lucide="trending-up" class="w-4 h-4"></i> Financeiro
       </button>
-      <button onclick="mudarAba('compras')" id="btn-compras" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800">
+      <button onclick="mudarAba('compras')" id="btn-compras" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800 flex-shrink-0">
         <i data-lucide="shopping-cart" class="w-4 h-4"></i> Gastos
       </button>
-      <button onclick="mudarAba('devedores')" id="btn-devedores" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800">
+      <button onclick="mudarAba('devedores')" id="btn-devedores" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800 flex-shrink-0">
         <i data-lucide="wallet" class="w-4 h-4"></i> Fiados por Data
       </button>
-      <button onclick="mudarAba('historico')" id="btn-historico" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800">
+      <button onclick="mudarAba('historico')" id="btn-historico" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800 flex-shrink-0">
         <i data-lucide="history" class="w-4 h-4"></i> Pagamentos
       </button>
-      <button onclick="mudarAba('clientes')" id="btn-clientes" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800">
+      <button onclick="mudarAba('clientes')" id="btn-clientes" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800 flex-shrink-0">
         <i data-lucide="users" class="w-4 h-4"></i> Clientes
       </button>
-      <button onclick="mudarAba('produtos')" id="btn-produtos" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800">
+      <button onclick="mudarAba('produtos')" id="btn-produtos" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800 flex-shrink-0">
         <i data-lucide="package" class="w-4 h-4"></i> Produtos
       </button>
     </nav>
   </header>
 
-  <!-- CONTEÚDO PRINCIPAL -->
-  <main class="flex-1 p-2 md:p-4 overflow-hidden relative bg-gradient-to-b from-dark-950 via-dark-900 to-dark-950">
+  <!-- CONTEÚDO PRINCIPAL (Permite rolagem livre no celular) -->
+  <main class="flex-1 p-2 md:p-4 overflow-y-auto relative bg-gradient-to-b from-dark-950 via-dark-900 to-dark-950">
 
     <!-- ABA 1: COMANDAS -->
-    <div id="aba-comandas" class="h-full grid grid-cols-1 md:grid-cols-12 gap-3.5 overflow-y-auto md:overflow-hidden pb-12 md:pb-0">
+    <div id="aba-comandas" class="grid grid-cols-1 md:grid-cols-12 gap-3.5 pb-16 md:pb-0 md:h-full">
       
-      <!-- PAINEL ESQUERDO (Ajustado para rolagem em celulares) -->
-      <div class="md:col-span-7 glass-card rounded-2xl flex flex-col overflow-hidden shadow-2xl h-auto md:h-full">
+      <!-- PAINEL ESQUERDO -->
+      <div class="md:col-span-7 glass-card rounded-2xl flex flex-col shadow-2xl overflow-hidden">
         <div class="p-3.5 border-b border-amber-500/10 bg-dark-900/60 space-y-2.5">
           <div class="flex justify-between items-center">
             <label class="block text-xs font-extrabold text-amber-400/90 uppercase tracking-widest flex items-center gap-1.5">
               <i data-lucide="calendar" class="w-3.5 h-3.5"></i> 1. Data do Evento
             </label>
-            <input type="date" id="input-data-evento" onchange="renderizarTudo()" class="p-1.5 px-3 border rounded-xl text-xs font-bold bg-dark-950 text-amber-400 border-amber-500/30 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400">
+            <input type="date" id="input-data-evento" onchange="renderizarTudo()" class="p-1.5 px-3 border rounded-xl text-xs font-bold bg-dark-950 text-amber-400 border-amber-500/30 outline-none focus:border-amber-400">
           </div>
           
           <div class="flex justify-between items-center pt-1">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">2. Selecione o Amigo</span>
             <span class="text-[11px] text-amber-500/60 font-medium">Toque para ver a comanda</span>
           </div>
-          <!-- Limite de altura definido para 140px no mobile para não espremer os produtos -->
-          <div id="grid-clientes-emojis" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 max-h-[140px] md:max-h-[220px] overflow-y-auto pr-1"></div>
+          
+          <div id="grid-clientes-emojis" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 max-h-48 md:max-h-56 overflow-y-auto pr-1"></div>
         </div>
 
-        <div class="p-3.5 flex-1 min-h-[220px] overflow-y-auto bg-dark-950/40">
+        <div class="p-3.5 flex-1 bg-dark-950/40">
           <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
             <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-amber-400"></i> 3. Lançar Consumo na Comanda
           </label>
-          <div id="lista-produtos-cards" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5"></div>
+          <div id="lista-produtos-cards" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-h-60 md:max-h-full overflow-y-auto"></div>
         </div>
       </div>
 
       <!-- PAINEL DIREITO -->
-      <div class="md:col-span-5 glass-card rounded-2xl flex flex-col min-h-[300px] md:h-full overflow-hidden shadow-2xl">
+      <div class="md:col-span-5 glass-card rounded-2xl flex flex-col shadow-2xl overflow-hidden">
         <div class="p-3.5 border-b border-amber-500/10 bg-dark-900/60 flex justify-between items-center">
           <div>
             <p id="nome-cliente-comanda" class="text-sm text-slate-100 font-bold flex items-center gap-1.5">
@@ -166,7 +165,7 @@
         <div class="flex-1 overflow-y-auto p-3.5 space-y-3.5">
           <div>
             <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider block mb-1.5">Itens em Aberto na Comanda:</span>
-            <div id="historico-debitos-cliente" class="space-y-2 max-h-56 md:max-h-72 overflow-y-auto pr-1">
+            <div id="historico-debitos-cliente" class="space-y-2 max-h-48 md:max-h-72 overflow-y-auto pr-1">
               <p class="text-slate-500 text-xs italic">Selecione um amigo para ver a comanda.</p>
             </div>
           </div>
@@ -189,7 +188,7 @@
     </div>
 
     <!-- ABA 2: LUCRO -->
-    <div id="aba-lucro" class="h-full hidden glass-card rounded-2xl p-4 md:p-6 overflow-y-auto">
+    <div id="aba-lucro" class="hidden glass-card rounded-2xl p-4 md:p-6">
       <div class="flex justify-between items-center mb-6 border-b border-amber-500/10 pb-4">
         <div>
           <h2 class="text-xl font-extrabold text-amber-400">Balanço Financeiro & Lucro Real</h2>
@@ -226,7 +225,7 @@
     </div>
 
     <!-- ABA 3: COMPRAS / GASTOS -->
-    <div id="aba-compras" class="h-full hidden glass-card rounded-2xl p-4 md:p-6 overflow-y-auto">
+    <div id="aba-compras" class="hidden glass-card rounded-2xl p-4 md:p-6">
       <div class="flex justify-between items-center mb-4 border-b border-amber-500/10 pb-3">
         <h2 class="text-xl font-extrabold text-amber-400">Lançar Gastos e Compras de Insumos</h2>
         <div class="p-3 bg-red-950/60 border border-red-500/30 rounded-xl text-right">
@@ -262,7 +261,7 @@
     </div>
 
     <!-- ABA 4: DEVEDORES -->
-    <div id="aba-devedores" class="h-full hidden glass-card rounded-2xl p-4 md:p-6 overflow-y-auto">
+    <div id="aba-devedores" class="hidden glass-card rounded-2xl p-4 md:p-6">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-amber-500/10 pb-4">
         <div>
           <h2 class="text-xl font-extrabold text-amber-400">Relatório de Pendências por Evento</h2>
@@ -285,7 +284,7 @@
     </div>
 
     <!-- ABA 5: HISTÓRICO -->
-    <div id="aba-historico" class="h-full hidden glass-card rounded-2xl p-4 md:p-6 overflow-y-auto">
+    <div id="aba-historico" class="hidden glass-card rounded-2xl p-4 md:p-6">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-amber-500/10 pb-4">
         <div>
           <h2 class="text-xl font-extrabold text-amber-400">Histórico de Pagamentos Recebidos</h2>
@@ -305,7 +304,7 @@
     </div>
 
     <!-- ABA 6: CLIENTES -->
-    <div id="aba-clientes" class="h-full hidden glass-card rounded-2xl p-4 md:p-6 overflow-y-auto">
+    <div id="aba-clientes" class="hidden glass-card rounded-2xl p-4 md:p-6">
       <h2 class="text-xl font-extrabold text-amber-400 mb-4">Gerenciar Amigos / Clientes</h2>
       <form onsubmit="salvarCliente(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-6 max-w-2xl">
         <div class="sm:col-span-5">
@@ -324,7 +323,7 @@
     </div>
 
     <!-- ABA 7: PRODUTOS -->
-    <div id="aba-produtos" class="h-full hidden glass-card rounded-2xl p-4 md:p-6 overflow-y-auto">
+    <div id="aba-produtos" class="hidden glass-card rounded-2xl p-4 md:p-6">
       <h2 class="text-xl font-extrabold text-amber-400 mb-4">Gerenciar Produtos & Custo Unitário</h2>
       <form onsubmit="salvarProduto(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6 max-w-xl">
         <input type="text" id="input-nome-prod" placeholder="Nome (Ex: Cerveja)" required class="p-3 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-sm">
@@ -481,10 +480,10 @@
     function mudarAba(aba) {
       ['comandas', 'lucro', 'compras', 'devedores', 'historico', 'clientes', 'produtos'].forEach(a => {
         document.getElementById(`aba-${a}`).classList.add('hidden');
-        document.getElementById(`btn-${a}`).className = 'px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800';
+        document.getElementById(`btn-${a}`).className = 'px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800 flex-shrink-0';
       });
       document.getElementById(`aba-${aba}`).classList.remove('hidden');
-      document.getElementById(`btn-${aba}`).className = 'px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-gradient-to-r from-amber-500 to-amber-600 text-dark-950 shadow-md shadow-amber-500/20';
+      document.getElementById(`btn-${aba}`).className = 'px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-gradient-to-r from-amber-500 to-amber-600 text-dark-950 shadow-md shadow-amber-500/20 flex-shrink-0';
       renderizarTudo();
     }
 
@@ -727,7 +726,6 @@
       });
     }
 
-    // FUNÇÃO PARA ENVIAR MENSAGEM PADRÃO DE COBRANÇA VIA WHATSAPP
     function cobrarWhatsApp(nomeCliente, valorPendente) {
       const clienteObj = db.clientes.find(c => c.nome === nomeCliente);
       
@@ -794,7 +792,6 @@
       }).join('');
     }
 
-    // CÁLCULO DINÂMICO DE COMPRAS
     function calcularTotalItemCompra() {
       const qtd = parseInt(document.getElementById('input-qtd-compra').value) || 0;
       const unit = parseFloat(document.getElementById('input-valor-unit-compra').value) || 0;
@@ -802,7 +799,6 @@
       document.getElementById('label-total-item-compra').innerText = `R$ ${total.toFixed(2)}`;
     }
 
-    // SALVA A COMPRA NO SUPABASE COM QUANTIDADE E VALOR TOTAL
     async function salvarCompra(e) {
       e.preventDefault();
       const desc = document.getElementById('input-desc-compra').value.trim();
