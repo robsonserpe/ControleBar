@@ -112,6 +112,17 @@ ADD COLUMN IF NOT EXISTS valor_unitario NUMERIC(10, 2) DEFAULT 0.00 NOT NULL;
 -- Atualizar o cache de schema da API do Supabase
 NOTIFY pgrst, 'reload schema';
 
+
+------- ADICIONANDO TELEFONE AO CLIENTE
+
+-- Adiciona a coluna de telefone na tabela de clientes caso ela não exista
+ALTER TABLE public.clientes 
+ADD COLUMN IF NOT EXISTS telefone TEXT;
+
+-- Atualiza o cache do schema da API do Supabase
+NOTIFY pgrst, 'reload schema';
+
+
 -- Adicionar políticas de leitura, inserção e deleção públicas
 CREATE POLICY "Permitir leitura compras" ON public.compras FOR SELECT USING (true);
 CREATE POLICY "Permitir insercao compras" ON public.compras FOR INSERT WITH CHECK (true);
