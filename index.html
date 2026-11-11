@@ -119,10 +119,10 @@
   <main class="flex-1 p-2 md:p-4 overflow-hidden relative bg-gradient-to-b from-dark-950 via-dark-900 to-dark-950">
 
     <!-- ABA 1: COMANDAS -->
-    <div id="aba-comandas" class="h-full grid grid-cols-1 md:grid-cols-12 gap-3.5 overflow-y-auto md:overflow-hidden">
+    <div id="aba-comandas" class="h-full grid grid-cols-1 md:grid-cols-12 gap-3.5 overflow-y-auto md:overflow-hidden pb-12 md:pb-0">
       
-      <!-- PAINEL ESQUERDO -->
-      <div class="md:col-span-7 glass-card rounded-2xl flex flex-col min-h-[360px] md:h-full overflow-hidden shadow-2xl">
+      <!-- PAINEL ESQUERDO (Ajustado para rolagem em celulares) -->
+      <div class="md:col-span-7 glass-card rounded-2xl flex flex-col overflow-hidden shadow-2xl h-auto md:h-full">
         <div class="p-3.5 border-b border-amber-500/10 bg-dark-900/60 space-y-2.5">
           <div class="flex justify-between items-center">
             <label class="block text-xs font-extrabold text-amber-400/90 uppercase tracking-widest flex items-center gap-1.5">
@@ -135,10 +135,11 @@
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">2. Selecione o Amigo</span>
             <span class="text-[11px] text-amber-500/60 font-medium">Toque para ver a comanda</span>
           </div>
-          <div id="grid-clientes-emojis" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 max-h-[210px] md:max-h-[240px] overflow-y-auto pr-1"></div>
+          <!-- Limite de altura definido para 140px no mobile para não espremer os produtos -->
+          <div id="grid-clientes-emojis" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 max-h-[140px] md:max-h-[220px] overflow-y-auto pr-1"></div>
         </div>
 
-        <div class="p-3.5 flex-1 overflow-y-auto bg-dark-950/40">
+        <div class="p-3.5 flex-1 min-h-[220px] overflow-y-auto bg-dark-950/40">
           <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
             <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-amber-400"></i> 3. Lançar Consumo na Comanda
           </label>
@@ -147,7 +148,7 @@
       </div>
 
       <!-- PAINEL DIREITO -->
-      <div class="md:col-span-5 glass-card rounded-2xl flex flex-col min-h-[360px] md:h-full overflow-hidden shadow-2xl">
+      <div class="md:col-span-5 glass-card rounded-2xl flex flex-col min-h-[300px] md:h-full overflow-hidden shadow-2xl">
         <div class="p-3.5 border-b border-amber-500/10 bg-dark-900/60 flex justify-between items-center">
           <div>
             <p id="nome-cliente-comanda" class="text-sm text-slate-100 font-bold flex items-center gap-1.5">
@@ -165,7 +166,7 @@
         <div class="flex-1 overflow-y-auto p-3.5 space-y-3.5">
           <div>
             <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider block mb-1.5">Itens em Aberto na Comanda:</span>
-            <div id="historico-debitos-cliente" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+            <div id="historico-debitos-cliente" class="space-y-2 max-h-56 md:max-h-72 overflow-y-auto pr-1">
               <p class="text-slate-500 text-xs italic">Selecione um amigo para ver a comanda.</p>
             </div>
           </div>
@@ -303,7 +304,7 @@
       <div id="lista-historico-pagamentos" class="space-y-2.5"></div>
     </div>
 
-    <!-- ABA 6: CLIENTES (COM CAMPO DE TELEFONE ADICIONADO) -->
+    <!-- ABA 6: CLIENTES -->
     <div id="aba-clientes" class="h-full hidden glass-card rounded-2xl p-4 md:p-6 overflow-y-auto">
       <h2 class="text-xl font-extrabold text-amber-400 mb-4">Gerenciar Amigos / Clientes</h2>
       <form onsubmit="salvarCliente(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-6 max-w-2xl">
@@ -737,7 +738,6 @@
         if (!telefone) return;
       }
 
-      // Limpa caracteres não numéricos do telefone
       let numLimpo = telefone.replace(/\D/g, '');
       if (!numLimpo.startsWith('55') && numLimpo.length <= 11) {
         numLimpo = '55' + numLimpo;
