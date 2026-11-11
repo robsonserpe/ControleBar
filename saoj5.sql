@@ -100,6 +100,18 @@ CREATE TABLE IF NOT EXISTS public.compras (
 -- Habilitar RLS (Row Level Security)
 ALTER TABLE public.compras ENABLE ROW LEVEL SECURITY;
 
+
+-- DEU ERRO AO INSEIR PRODUTO AI GEROU ESSE NOVO SQL
+
+-- Adicionar as colunas em falta na tabela de compras existente
+ALTER TABLE public.compras 
+ADD COLUMN IF NOT EXISTS data_compra DATE DEFAULT CURRENT_DATE NOT NULL,
+ADD COLUMN IF NOT EXISTS quantidade INT DEFAULT 1 NOT NULL,
+ADD COLUMN IF NOT EXISTS valor_unitario NUMERIC(10, 2) DEFAULT 0.00 NOT NULL;
+
+-- Atualizar o cache de schema da API do Supabase
+NOTIFY pgrst, 'reload schema';
+
 -- Adicionar políticas de leitura, inserção e deleção públicas
 CREATE POLICY "Permitir leitura compras" ON public.compras FOR SELECT USING (true);
 CREATE POLICY "Permitir insercao compras" ON public.compras FOR INSERT WITH CHECK (true);
