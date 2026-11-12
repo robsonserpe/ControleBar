@@ -741,7 +741,7 @@
         numLimpo = '55' + numLimpo;
       }
 
-      const mensagem = `Cobrança do Bar Informa: seu débito esta em aberto no valor de R$ ${valorPendente.toFixed(2)}\nCaso ja tenha quitado essa pendência favor ignorar mensagem\nMensagem automática`;
+      const mensagem = `Cobrança do Bar Informa: seu débito esta em aberto no valor de R$ ${valorPendente.toFixed(2)}\nCaso ja tenha quitado essa pendência favor ignorar mensagem\nMensagem automática, chave 43991411006`;
 
       const link = `https://wa.me/${numLimpo}?text=${encodeURIComponent(mensagem)}`;
       window.open(link, '_blank');
