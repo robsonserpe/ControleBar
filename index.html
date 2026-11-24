@@ -9,10 +9,10 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0b0f17">
+  <meta name="theme-color" content="#0a0c10">
   
   <link rel="manifest" href="./manifest.json">
-  <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js', { scope: '/ControleBar/' }); }</script>
+  <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js', { scope: '/ControleBar/' }).catch(()=>{}); }</script>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -23,7 +23,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -32,21 +32,15 @@
         extend: {
           fontFamily: {
             sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
-            gold: {
-              300: '#fef08a',
-              400: '#facc15',
-              500: '#eab308',
-              600: '#ca8a04',
-              700: '#a16207',
-            },
-            dark: {
-              950: '#070a0f',
-              900: '#0b0f17',
-              850: '#111726',
-              800: '#172033',
-              700: '#232f48',
+            surface: {
+              950: '#0a0c10', // Fundo principal
+              900: '#0f1218', // Sidebar e Header
+              850: '#141820', // Containers/Cards principais
+              800: '#1a1f29', // Cards internos
+              750: '#222834', // Hover / Inputs
             }
           }
         }
@@ -55,299 +49,393 @@
   </script>
 
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #070a0f; color: #f1f5f9; }
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #0b0f17; }
-    ::-webkit-scrollbar-thumb { background: #232f48; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #ca8a04; }
-    
-    .gold-gradient-text {
-      background: linear-gradient(135deg, #ffffff 0%, #fef08a 40%, #eab308 100%);
-      -webkit-background-clip: text !important;
-      background-clip: text !important;
-      -webkit-text-fill-color: transparent !important;
-    }
-    .glass-card {
-      background: rgba(17, 23, 38, 0.75);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(212, 175, 55, 0.18);
-    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0a0c10; color: #f1f5f9; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #262d3d; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
   </style>
 </head>
-<body class="min-h-screen md:h-screen flex flex-col text-slate-100">
+<body class="h-screen overflow-hidden flex flex-col md:flex-row bg-surface-950 text-slate-100 select-none">
 
-  <!-- BARRA DE NAVEGAÇÃO SUPERIOR -->
-  <header class="bg-dark-900 border-b border-amber-500/20 p-2.5 md:p-3 shadow-2xl flex justify-between items-center flex-wrap gap-2 z-10">
-    <div class="flex items-center gap-2.5">
-      <div class="p-2 rounded-xl bg-gradient-to-br from-amber-400 to-amber-700 shadow-lg shadow-amber-500/20">
-        <i data-lucide="crown" class="text-dark-950 w-5 h-5 stroke-[2.5]"></i>
-      </div>
-      <div>
-        <h1 class="font-extrabold text-base md:text-lg tracking-wide gold-gradient-text uppercase">Vendas de Domingo</h1>
-        <p class="text-[10px] text-amber-500/70 font-semibold tracking-widest uppercase -mt-1">Gestão VIP & Comandas</p>
-      </div>
-    </div>
-
-    <!-- BOTÕES DE NAVEGAÇÃO -->
-    <nav class="flex gap-1 md:gap-2 overflow-x-auto py-1 w-full md:w-auto">
-      <button onclick="mudarAba('comandas')" id="btn-comandas" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-gradient-to-r from-amber-500 to-amber-600 text-dark-950 shadow-md shadow-amber-500/20 flex-shrink-0">
-        <i data-lucide="shopping-bag" class="w-4 h-4"></i> Comandas
-      </button>
-      <button onclick="mudarAba('lucro')" id="btn-lucro" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800 flex-shrink-0">
-        <i data-lucide="trending-up" class="w-4 h-4"></i> Financeiro
-      </button>
-      <button onclick="mudarAba('compras')" id="btn-compras" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800 flex-shrink-0">
-        <i data-lucide="shopping-cart" class="w-4 h-4"></i> Gastos
-      </button>
-      <button onclick="mudarAba('devedores')" id="btn-devedores" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800 flex-shrink-0">
-        <i data-lucide="wallet" class="w-4 h-4"></i> Fiados por Data
-      </button>
-      <button onclick="mudarAba('historico')" id="btn-historico" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800 flex-shrink-0">
-        <i data-lucide="history" class="w-4 h-4"></i> Pagamentos
-      </button>
-      <button onclick="mudarAba('clientes')" id="btn-clientes" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800 flex-shrink-0">
-        <i data-lucide="users" class="w-4 h-4"></i> Clientes
-      </button>
-      <button onclick="mudarAba('produtos')" id="btn-produtos" class="px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800 flex-shrink-0">
-        <i data-lucide="package" class="w-4 h-4"></i> Produtos
-      </button>
-    </nav>
-  </header>
-
-  <!-- CONTEÚDO PRINCIPAL (Permite rolagem livre no celular) -->
-  <main class="flex-1 p-2 md:p-4 overflow-y-auto relative bg-gradient-to-b from-dark-950 via-dark-900 to-dark-950">
-
-    <!-- ABA 1: COMANDAS -->
-    <div id="aba-comandas" class="grid grid-cols-1 md:grid-cols-12 gap-3.5 pb-16 md:pb-0 md:h-full">
-      
-      <!-- PAINEL ESQUERDO -->
-      <div class="md:col-span-7 glass-card rounded-2xl flex flex-col shadow-2xl overflow-hidden">
-        <div class="p-3.5 border-b border-amber-500/10 bg-dark-900/60 space-y-2.5">
-          <div class="flex justify-between items-center">
-            <label class="block text-xs font-extrabold text-amber-400/90 uppercase tracking-widest flex items-center gap-1.5">
-              <i data-lucide="calendar" class="w-3.5 h-3.5"></i> 1. Data do Evento
-            </label>
-            <input type="date" id="input-data-evento" onchange="renderizarTudo()" class="p-1.5 px-3 border rounded-xl text-xs font-bold bg-dark-950 text-amber-400 border-amber-500/30 outline-none focus:border-amber-400">
+  <!-- ==================== SIDEBAR ESQUERDA ==================== -->
+  <aside class="w-full md:w-60 bg-surface-900 border-b md:border-b-0 md:border-r border-slate-800/80 flex flex-col justify-between flex-shrink-0 z-20">
+    
+    <!-- Topo / Logo -->
+    <div>
+      <div class="p-3.5 md:p-4 flex items-center justify-between md:justify-start gap-3 border-b border-slate-800/60">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <i data-lucide="crown" class="text-surface-950 w-4 h-4 stroke-[2.5]"></i>
           </div>
-          
-          <div class="flex justify-between items-center pt-1">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">2. Selecione o Amigo</span>
-            <span class="text-[11px] text-amber-500/60 font-medium">Toque para ver a comanda</span>
-          </div>
-          
-          <div id="grid-clientes-emojis" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 max-h-48 md:max-h-56 overflow-y-auto pr-1"></div>
+          <span class="font-extrabold text-sm tracking-tight text-white">Vendas de Domingo</span>
         </div>
-
-        <div class="p-3.5 flex-1 bg-dark-950/40">
-          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-            <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-amber-400"></i> 3. Lançar Consumo na Comanda
-          </label>
-          <div id="lista-produtos-cards" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-h-60 md:max-h-full overflow-y-auto"></div>
-        </div>
+        <!-- Botão menu mobile -->
+        <button onclick="document.getElementById('mobile-nav').classList.toggle('hidden')" class="md:hidden p-1.5 rounded-lg bg-surface-800 text-slate-300">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
       </div>
 
-      <!-- PAINEL DIREITO -->
-      <div class="md:col-span-5 glass-card rounded-2xl flex flex-col shadow-2xl overflow-hidden">
-        <div class="p-3.5 border-b border-amber-500/10 bg-dark-900/60 flex justify-between items-center">
-          <div>
-            <p id="nome-cliente-comanda" class="text-sm text-slate-100 font-bold flex items-center gap-1.5">
-              <span>👤</span> <span>Selecione um amigo</span>
-            </p>
-            <p id="saldo-devedor-cliente" class="text-xs font-bold text-red-400 mt-0.5">Saldo Acumulado: R$ 0,00</p>
-          </div>
-          <div class="flex gap-1.5">
-            <button onclick="copiarExtratoWhatsApp()" class="text-[11px] text-emerald-400 font-bold px-2.5 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-500/30 transition-all flex items-center gap-1">
-              <span>📋</span> Zap
+      <!-- Menu de Navegação -->
+      <nav id="mobile-nav" class="hidden md:block p-3 space-y-4 overflow-y-auto max-h-[calc(100vh-180px)]">
+        <!-- Grupo: Operação -->
+        <div>
+          <p class="px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Operação</p>
+          <div class="space-y-1">
+            <button onclick="mudarAba('comandas')" id="btn-comandas" class="nav-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all bg-amber-500/15 text-amber-400 border border-amber-500/30">
+              <span class="flex items-center gap-2.5"><i data-lucide="shopping-bag" class="w-4 h-4"></i> Comandas</span>
+            </button>
+            <button onclick="mudarAba('devedores')" id="btn-devedores" class="nav-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-surface-800 transition-all">
+              <span class="flex items-center gap-2.5"><i data-lucide="wallet" class="w-4 h-4"></i> Fiados por Data</span>
+              <span id="badge-devedores" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-surface-800 text-slate-400">0</span>
             </button>
           </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-3.5 space-y-3.5">
+        <!-- Grupo: Financeiro -->
+        <div>
+          <p class="px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Financeiro</p>
+          <div class="space-y-1">
+            <button onclick="mudarAba('lucro')" id="btn-lucro" class="nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-surface-800 transition-all">
+              <i data-lucide="trending-up" class="w-4 h-4"></i> Financeiro
+            </button>
+            <button onclick="mudarAba('compras')" id="btn-compras" class="nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-surface-800 transition-all">
+              <i data-lucide="shopping-cart" class="w-4 h-4"></i> Gastos & Compras
+            </button>
+            <button onclick="mudarAba('historico')" id="btn-historico" class="nav-item w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-surface-800 transition-all">
+              <i data-lucide="history" class="w-4 h-4"></i> Pagamentos
+            </button>
+          </div>
+        </div>
+
+        <!-- Grupo: Cadastros -->
+        <div>
+          <p class="px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Cadastros</p>
+          <div class="space-y-1">
+            <button onclick="mudarAba('clientes')" id="btn-clientes" class="nav-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-surface-800 transition-all">
+              <span class="flex items-center gap-2.5"><i data-lucide="users" class="w-4 h-4"></i> Clientes</span>
+              <span id="badge-clientes" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-surface-800 text-slate-400">0</span>
+            </button>
+            <button onclick="mudarAba('produtos')" id="btn-produtos" class="nav-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-surface-800 transition-all">
+              <span class="flex items-center gap-2.5"><i data-lucide="package" class="w-4 h-4"></i> Produtos</span>
+              <span id="badge-produtos" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-surface-800 text-slate-400">0</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Rodapé da Sidebar (Resumo Rápido) -->
+    <div class="hidden md:block p-3 border-t border-slate-800/80 space-y-2.5">
+      <div class="p-3 rounded-xl bg-surface-850 border border-slate-800/90">
+        <p class="text-[10px] font-medium text-slate-400">A receber em comandas</p>
+        <p id="sidebar-total-receber" class="text-base font-extrabold text-amber-400 font-mono tabular-nums mt-0.5">R$ 0,00</p>
+      </div>
+      <div class="grid grid-cols-2 gap-1.5">
+        <div class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-surface-850 border border-slate-800 text-[11px] text-slate-400">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online
+        </div>
+        <button onclick="mudarAba('produtos')" class="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-surface-850 hover:bg-surface-800 border border-slate-800 text-[11px] text-slate-300 transition-all">
+          <i data-lucide="sliders-horizontal" class="w-3 h-3"></i> Ajustes
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== ÁREA PRINCIPAL DIREITA ==================== -->
+  <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+    
+    <!-- BARRA SUPERIOR (BREADCRUMB + DATA + SINCRONIZAR) -->
+    <header class="h-14 bg-surface-900/90 border-b border-slate-800/80 px-4 flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-2 text-xs">
+        <span class="text-slate-500 font-medium hidden sm:inline">Club Deluxe</span>
+        <span class="text-slate-600 hidden sm:inline">/</span>
+        <span id="header-titulo-aba" class="font-bold text-slate-100 text-sm">Comandas</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Seletor de Data do Evento -->
+        <div class="flex items-center gap-1.5 bg-surface-850 border border-slate-800 rounded-lg px-2.5 py-1.5">
+          <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-400"></i>
+          <input type="date" id="input-data-evento" onchange="renderizarTudo()" class="bg-transparent text-xs font-bold text-slate-200 outline-none cursor-pointer">
+        </div>
+
+        <button onclick="carregarDadosDoSupabase()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-850 hover:bg-surface-800 border border-slate-700/80 text-xs font-semibold text-slate-200 transition-all active:scale-95">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-400"></i>
+          <span class="hidden sm:inline">Sincronizar</span>
+        </button>
+
+        <button onclick="mudarAba('clientes')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-surface-950 text-xs font-bold transition-all shadow-md shadow-amber-500/10">
+          <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Novo Amigo</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTEÚDO DAS ABAS -->
+    <main class="flex-1 overflow-y-auto md:overflow-hidden p-3 md:p-4 bg-surface-950">
+
+      <!-- ==================== ABA 1: COMANDAS (LAYOUT IDÊNTICO À IMAGEM) ==================== -->
+      <div id="aba-comandas" class="h-full grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        <!-- COLUNA CENTRAL: BLOCO CLIENTES + BLOCO PRODUTOS -->
+        <div class="lg:col-span-8 flex flex-col gap-3.5 h-full overflow-hidden">
+          
+          <!-- DIV 1: SELEÇÃO DE AMIGOS / CLIENTES -->
+          <div class="bg-surface-850 border border-slate-800/90 rounded-2xl p-3.5 flex flex-col flex-1 min-h-[250px] overflow-hidden shadow-xl">
+            <!-- Barra de Busca + Filtros -->
+            <div class="flex flex-col sm:flex-row gap-2.5 justify-between items-stretch sm:items-center mb-3 flex-shrink-0">
+              <div class="relative flex-1">
+                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                <input type="text" id="busca-cliente-comanda" oninput="renderizarTudo()" placeholder="Buscar amigo por nome..." class="w-full bg-surface-900 border border-slate-800 focus:border-amber-500/50 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 outline-none transition-all">
+              </div>
+              
+              <div class="flex bg-surface-900 p-0.5 rounded-xl border border-slate-800 self-start sm:self-auto">
+                <button onclick="setFiltroStatusCliente('todos')" id="filtro-cli-todos" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-surface-750 text-white transition-all">Todos</button>
+                <button onclick="setFiltroStatusCliente('abertos')" id="filtro-cli-abertos" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-400 hover:text-slate-200 transition-all">Em aberto</button>
+                <button onclick="setFiltroStatusCliente('quitados')" id="filtro-cli-quitados" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-400 hover:text-slate-200 transition-all">Quitados</button>
+              </div>
+            </div>
+
+            <!-- Grid de Cards de Clientes -->
+            <div id="grid-clientes-emojis" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 overflow-y-auto pr-1 content-start flex-1"></div>
+          </div>
+
+          <!-- DIV 2: LANÇAR CONSUMO / PRODUTOS -->
+          <div class="bg-surface-850 border border-slate-800/90 rounded-2xl p-3.5 flex flex-col h-[46%] min-h-[230px] overflow-hidden shadow-xl">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-2.5 flex-shrink-0">
+              <div>
+                <h3 class="text-xs font-extrabold text-slate-100 flex items-center gap-1.5">
+                  2. Lançar Consumo
+                </h3>
+                <p id="subtitulo-lancar-consumo" class="text-[11px] text-slate-500">Selecione um amigo acima para lançar itens</p>
+              </div>
+
+              <!-- Seletor de Quantidade (1x, 2x, 3x, 6x) -->
+              <div class="flex items-center gap-1.5">
+                <span class="text-[11px] text-slate-500 font-medium">Qtd:</span>
+                <div class="flex bg-surface-900 p-0.5 rounded-lg border border-slate-800">
+                  <button onclick="setQtdMultiplicador(1)" id="btn-qtd-1" class="px-2 py-0.5 rounded text-[11px] font-extrabold bg-amber-500 text-surface-950 transition-all">1x</button>
+                  <button onclick="setQtdMultiplicador(2)" id="btn-qtd-2" class="px-2 py-0.5 rounded text-[11px] font-bold text-slate-400 hover:text-white transition-all">2x</button>
+                  <button onclick="setQtdMultiplicador(3)" id="btn-qtd-3" class="px-2 py-0.5 rounded text-[11px] font-bold text-slate-400 hover:text-white transition-all">3x</button>
+                  <button onclick="setQtdMultiplicador(6)" id="btn-qtd-6" class="px-2 py-0.5 rounded text-[11px] font-bold text-slate-400 hover:text-white transition-all">6x</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filtro rápido de Produto -->
+            <div class="relative mb-2.5 flex-shrink-0">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input type="text" id="busca-produto-comanda" oninput="renderizarTudo()" placeholder="Filtrar cardápio (cerveja, espetinho, porção...)" class="w-full bg-surface-900 border border-slate-800 focus:border-amber-500/50 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 outline-none transition-all">
+            </div>
+
+            <!-- Grid de Produtos -->
+            <div id="lista-produtos-cards" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 overflow-y-auto pr-1 content-start flex-1"></div>
+          </div>
+
+        </div>
+
+        <!-- DIV 3: PAINEL DIREITO (EXTRATO DA COMANDA ATIVA) -->
+        <div class="lg:col-span-4 bg-surface-850 border border-slate-800/90 rounded-2xl flex flex-col h-full overflow-hidden shadow-2xl">
+          
+          <!-- Cabeçalho do Cliente na Comanda -->
+          <div class="p-3.5 border-b border-slate-800/90 flex justify-between items-center bg-surface-900/50 flex-shrink-0">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div id="avatar-cliente-comanda" class="w-9 h-9 rounded-xl bg-surface-800 border border-slate-700 flex items-center justify-center text-lg flex-shrink-0">
+                👤
+              </div>
+              <div class="min-w-0">
+                <p id="nome-cliente-comanda" class="text-xs font-extrabold text-slate-100 uppercase tracking-wide truncate">
+                  Selecione um amigo
+                </p>
+                <p id="info-cliente-comanda" class="text-[11px] text-slate-400 truncate mt-0.5">
+                  0 lançamentos
+                </p>
+              </div>
+            </div>
+
+            <button onclick="copiarExtratoWhatsApp()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold transition-all flex-shrink-0">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Extrato Zap
+            </button>
+          </div>
+
+          <!-- Lista de Itens Lançados -->
+          <div id="historico-debitos-cliente" class="flex-1 overflow-y-auto divide-y divide-slate-800/60 px-3.5">
+            <div class="h-full flex flex-col items-center justify-center text-center py-8 text-slate-500">
+              <i data-lucide="receipt" class="w-8 h-8 mb-2 opacity-30"></i>
+              <p class="text-xs">Toque em um amigo à esquerda para abrir a comanda.</p>
+            </div>
+          </div>
+
+          <!-- Rodapé Total + Botões de Pagamento -->
+          <div class="p-3.5 border-t border-slate-800/90 bg-surface-900/70 space-y-3 flex-shrink-0">
+            <div class="flex justify-between items-end">
+              <div>
+                <p class="text-xs font-semibold text-slate-300">Total Acumulado a Receber</p>
+                <p id="status-acerto-label" class="text-[10px] text-slate-500">Aguardando acerto</p>
+              </div>
+              <p id="total-hoje" class="text-2xl font-extrabold text-amber-400 font-mono tabular-nums tracking-tight">R$ 0,00</p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="receberPagamento('Pix')" class="py-2.5 bg-emerald-500 hover:bg-emerald-400 text-surface-950 font-extrabold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-lg shadow-emerald-500/10">
+                <i data-lucide="qr-code" class="w-3.5 h-3.5"></i> PIX
+              </button>
+              <button onclick="receberPagamento('Dinheiro')" class="py-2.5 bg-slate-100 hover:bg-white text-surface-950 font-extrabold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95">
+                <i data-lucide="banknote" class="w-3.5 h-3.5"></i> Dinheiro
+              </button>
+              <button onclick="receberPagamento('Cartao')" class="py-2.5 bg-surface-800 hover:bg-surface-750 text-slate-200 border border-slate-700 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95">
+                <i data-lucide="credit-card" class="w-3.5 h-3.5"></i> Cartão
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ==================== ABA 2: FINANCEIRO / LUCRO ==================== -->
+      <div id="aba-lucro" class="hidden h-full overflow-y-auto bg-surface-850 border border-slate-800 rounded-2xl p-4 md:p-6">
+        <div class="mb-5 border-b border-slate-800 pb-4">
+          <h2 class="text-lg font-extrabold text-white">Balanço Financeiro & Lucro Real</h2>
+          <p class="text-xs text-slate-400">Visão completa de faturamento, caixa, fiados e lucro líquido da operação</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
+          <div class="p-4 bg-surface-900 border border-slate-800 rounded-xl">
+            <p class="text-[11px] text-blue-400 font-bold uppercase">Total Vendido (Geral)</p>
+            <p id="stat-lucro-vendas" class="text-xl font-extrabold text-white font-mono mt-1">R$ 0,00</p>
+          </div>
+          <div class="p-4 bg-surface-900 border border-slate-800 rounded-xl">
+            <p class="text-[11px] text-emerald-400 font-bold uppercase">Recebido no Caixa</p>
+            <p id="stat-lucro-recebido" class="text-xl font-extrabold text-emerald-400 font-mono mt-1">R$ 0,00</p>
+          </div>
+          <div class="p-4 bg-surface-900 border border-slate-800 rounded-xl">
+            <p class="text-[11px] text-amber-400 font-bold uppercase">Fiado Pendente</p>
+            <p id="stat-lucro-fiado" class="text-xl font-extrabold text-amber-400 font-mono mt-1">R$ 0,00</p>
+          </div>
+          <div class="p-4 bg-surface-900 border border-slate-800 rounded-xl">
+            <p class="text-[11px] text-red-400 font-bold uppercase">Total Gastos/Compras</p>
+            <p id="stat-lucro-gastos" class="text-xl font-extrabold text-red-400 font-mono mt-1">R$ 0,00</p>
+          </div>
+        </div>
+        <div id="card-lucro-liquido" class="p-4 bg-emerald-950/30 border border-emerald-500/40 rounded-xl mb-6 flex justify-between items-center">
           <div>
-            <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider block mb-1.5">Itens em Aberto na Comanda:</span>
-            <div id="historico-debitos-cliente" class="space-y-2 max-h-48 md:max-h-72 overflow-y-auto pr-1">
-              <p class="text-slate-500 text-xs italic">Selecione um amigo para ver a comanda.</p>
+            <p class="text-xs font-extrabold uppercase text-emerald-400">Lucro Líquido Real da Operação</p>
+            <p class="text-[11px] text-slate-400">(Total Vendido Geral - Gastos de Compras)</p>
+          </div>
+          <p id="stat-lucro-liquido" class="text-2xl font-extrabold text-emerald-300 font-mono">R$ 0,00</p>
+        </div>
+        <h3 class="font-bold text-slate-300 mb-3 text-xs uppercase tracking-wider">Margem de Lucro Bruto por Item</h3>
+        <div id="tabela-margem-produtos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </div>
+
+      <!-- ==================== ABA 3: COMPRAS / GASTOS ==================== -->
+      <div id="aba-compras" class="hidden h-full overflow-y-auto bg-surface-850 border border-slate-800 rounded-2xl p-4 md:p-6">
+        <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+          <h2 class="text-lg font-extrabold text-white">Lançar Gastos e Compras de Insumos</h2>
+          <div class="px-3.5 py-2 bg-red-950/40 border border-red-500/30 rounded-xl text-right">
+            <p class="text-[10px] text-red-400 font-bold uppercase">Total de Compras</p>
+            <p id="stat-total-compras-geral" class="text-base font-extrabold text-red-300 font-mono">R$ 0,00</p>
+          </div>
+        </div>
+
+        <form onsubmit="salvarCompra(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-6 bg-surface-900 p-4 border border-slate-800 rounded-xl">
+          <div class="sm:col-span-5">
+            <label class="block text-[11px] font-bold text-slate-400 mb-1">Descrição do Item/Produto</label>
+            <input type="text" id="input-desc-compra" placeholder="Ex: Fardo Cerveja 12un / Carvão" required class="w-full p-2.5 bg-surface-950 border border-slate-800 rounded-lg text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-xs">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-[11px] font-bold text-slate-400 mb-1">Qtd</label>
+            <input type="number" min="1" step="1" id="input-qtd-compra" value="1" oninput="calcularTotalItemCompra()" required class="w-full p-2.5 bg-surface-950 border border-slate-800 rounded-lg text-slate-100 outline-none focus:border-amber-400 text-xs text-center">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-[11px] font-bold text-slate-400 mb-1">Valor Unit. (R$)</label>
+            <input type="number" step="0.01" id="input-valor-unit-compra" placeholder="12.50" oninput="calcularTotalItemCompra()" required class="w-full p-2.5 bg-surface-950 border border-slate-800 rounded-lg text-slate-100 outline-none focus:border-amber-400 text-xs">
+          </div>
+          <div class="sm:col-span-3 flex flex-col justify-end">
+            <span class="text-[10px] text-slate-400 font-bold mb-1">Total: <b id="label-total-item-compra" class="text-amber-400">R$ 0,00</b></span>
+            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-surface-950 font-bold py-2.5 rounded-lg text-xs transition-all">Lançar Compra</button>
+          </div>
+        </form>
+
+        <h3 class="font-bold text-slate-300 mb-3 text-xs uppercase tracking-wider">Histórico de Compras Registradas</h3>
+        <div id="lista-compras-registradas" class="space-y-2 max-w-4xl"></div>
+      </div>
+
+      <!-- ==================== ABA 4: DEVEDORES ==================== -->
+      <div id="aba-devedores" class="hidden h-full overflow-y-auto bg-surface-850 border border-slate-800 rounded-2xl p-4 md:p-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-5 border-b border-slate-800 pb-4">
+          <div>
+            <h2 class="text-lg font-extrabold text-white">Fiados por Data de Evento</h2>
+            <p class="text-xs text-slate-400">Filtre por domingo específico para cobrar pendências</p>
+          </div>
+          <div class="flex flex-wrap gap-3 items-center">
+            <select id="filtro-data-evento" onchange="renderizarDevedores()" class="p-2.5 bg-surface-900 border border-slate-800 rounded-xl text-xs text-amber-400 font-bold outline-none focus:border-amber-400">
+              <option value="">Todas as Datas (Acumulado)</option>
+            </select>
+            <div class="px-3.5 py-2 bg-red-950/40 border border-red-500/30 rounded-xl">
+              <p class="text-[10px] text-red-400 font-bold uppercase">Total Filtrado</p>
+              <p id="stat-total-a-receber" class="text-base font-extrabold text-red-300 font-mono">R$ 0,00</p>
             </div>
           </div>
         </div>
-
-        <div class="p-3.5 border-t border-amber-500/10 bg-dark-900/80 space-y-2.5">
-          <div class="flex justify-between items-center font-bold text-slate-100 px-1">
-            <span class="text-xs text-slate-400">Total Acumulado a Receber:</span>
-            <span id="total-hoje" class="text-lg text-amber-400 font-extrabold">R$ 0,00</span>
-          </div>
-          <hr class="border-slate-800/80 my-1">
-          <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider text-center">Registrar Acerto de Conta:</p>
-          <div class="grid grid-cols-3 gap-2">
-            <button onclick="receberPagamento('Pix')" class="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md active:scale-95 text-xs border border-emerald-400/30 transition-all">PIX</button>
-            <button onclick="receberPagamento('Dinheiro')" class="py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-md active:scale-95 text-xs border border-blue-400/30 transition-all">Dinheiro</button>
-            <button onclick="receberPagamento('Cartao')" class="py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl shadow-md active:scale-95 text-xs border border-purple-400/30 transition-all">Cartão</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ABA 2: LUCRO -->
-    <div id="aba-lucro" class="hidden glass-card rounded-2xl p-4 md:p-6">
-      <div class="flex justify-between items-center mb-6 border-b border-amber-500/10 pb-4">
-        <div>
-          <h2 class="text-xl font-extrabold text-amber-400">Balanço Financeiro & Lucro Real</h2>
-          <p class="text-xs text-slate-400 mt-1">Visão completa de faturamento, caixa, fiados e lucro real da operação</p>
-        </div>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="p-4 bg-dark-850 border border-blue-500/30 rounded-2xl shadow-lg">
-          <p class="text-xs text-blue-400 font-extrabold uppercase tracking-wider">Total Vendido (Geral)</p>
-          <p id="stat-lucro-vendas" class="text-2xl font-black text-blue-300 mt-1">R$ 0,00</p>
-        </div>
-        <div class="p-4 bg-dark-850 border border-emerald-500/30 rounded-2xl shadow-lg">
-          <p class="text-xs text-emerald-400 font-extrabold uppercase tracking-wider">Recebido no Caixa</p>
-          <p id="stat-lucro-recebido" class="text-2xl font-black text-emerald-300 mt-1">R$ 0,00</p>
-        </div>
-        <div class="p-4 bg-dark-850 border border-amber-500/30 rounded-2xl shadow-lg">
-          <p class="text-xs text-amber-400 font-extrabold uppercase tracking-wider">Fiado Pendente</p>
-          <p id="stat-lucro-fiado" class="text-2xl font-black text-amber-300 mt-1">R$ 0,00</p>
-        </div>
-        <div class="p-4 bg-dark-850 border border-red-500/30 rounded-2xl shadow-lg">
-          <p class="text-xs text-red-400 font-extrabold uppercase tracking-wider">Total Gastos/Compras</p>
-          <p id="stat-lucro-gastos" class="text-2xl font-black text-red-300 mt-1">R$ 0,00</p>
-        </div>
-      </div>
-      <div id="card-lucro-liquido" class="p-5 bg-gradient-to-r from-emerald-950/80 to-dark-850 border-2 border-emerald-500/50 rounded-2xl mb-6 flex justify-between items-center shadow-2xl">
-        <div>
-          <p class="text-xs font-black uppercase text-emerald-400 tracking-widest">LUCRO LÍQUIDO REAL DA OPERAÇÃO</p>
-          <p class="text-xs text-slate-400 mt-0.5">(Total Vendido Geral - Gastos de Compras)</p>
-        </div>
-        <p id="stat-lucro-liquido" class="text-3xl font-black text-emerald-300">R$ 0,00</p>
-      </div>
-      <h3 class="font-bold text-amber-400/90 mb-3 text-xs uppercase tracking-widest">Margem de Lucro Bruto por Item</h3>
-      <div id="tabela-margem-produtos" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
-    </div>
-
-    <!-- ABA 3: COMPRAS / GASTOS -->
-    <div id="aba-compras" class="hidden glass-card rounded-2xl p-4 md:p-6">
-      <div class="flex justify-between items-center mb-4 border-b border-amber-500/10 pb-3">
-        <h2 class="text-xl font-extrabold text-amber-400">Lançar Gastos e Compras de Insumos</h2>
-        <div class="p-3 bg-red-950/60 border border-red-500/30 rounded-xl text-right">
-          <p class="text-[10px] text-red-400 font-extrabold uppercase tracking-wider">Total Geral de Compras</p>
-          <p id="stat-total-compras-geral" class="text-xl font-black text-red-300">R$ 0,00</p>
-        </div>
+        <div id="lista-saldos-devedores" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
       </div>
 
-      <form onsubmit="salvarCompra(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-6 bg-dark-950/60 p-4 border border-slate-800 rounded-2xl">
-        <div class="sm:col-span-5">
-          <label class="block text-xs font-bold text-slate-400 mb-1">Descrição do Item/Produto</label>
-          <input type="text" id="input-desc-compra" placeholder="Ex: Fardo Cerveja 12un / Carvão" required class="w-full p-2.5 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-sm">
-        </div>
-        
-        <div class="sm:col-span-2">
-          <label class="block text-xs font-bold text-slate-400 mb-1">Qtd</label>
-          <input type="number" min="1" step="1" id="input-qtd-compra" value="1" oninput="calcularTotalItemCompra()" required class="w-full p-2.5 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-amber-400 text-sm text-center">
-        </div>
-
-        <div class="sm:col-span-2">
-          <label class="block text-xs font-bold text-slate-400 mb-1">Valor Unit. (R$)</label>
-          <input type="number" step="0.01" id="input-valor-unit-compra" placeholder="Ex: 12.50" oninput="calcularTotalItemCompra()" required class="w-full p-2.5 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-amber-400 text-sm">
-        </div>
-
-        <div class="sm:col-span-3 flex flex-col justify-end">
-          <span class="text-[10px] text-slate-400 font-bold uppercase mb-1">Total do Item: <b id="label-total-item-compra" class="text-amber-400 text-xs">R$ 0,00</b></span>
-          <button type="submit" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-dark-950 font-bold py-2.5 rounded-xl text-xs shadow-md transition-all">Lançar Compra</button>
-        </div>
-      </form>
-
-      <h3 class="font-bold text-slate-300 mb-3 text-sm">Histórico de Compras Registradas</h3>
-      <div id="lista-compras-registradas" class="space-y-2 max-w-4xl"></div>
-    </div>
-
-    <!-- ABA 4: DEVEDORES -->
-    <div id="aba-devedores" class="hidden glass-card rounded-2xl p-4 md:p-6">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-amber-500/10 pb-4">
-        <div>
-          <h2 class="text-xl font-extrabold text-amber-400">Relatório de Pendências por Evento</h2>
-          <p class="text-xs text-slate-400 mt-1">Filtre por data para consultar devedores de domingos específicos</p>
-        </div>
-        <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-end">
+      <!-- ==================== ABA 5: HISTÓRICO ==================== -->
+      <div id="aba-historico" class="hidden h-full overflow-y-auto bg-surface-850 border border-slate-800 rounded-2xl p-4 md:p-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-5 border-b border-slate-800 pb-4">
           <div>
-            <label class="block text-xs font-bold text-slate-400 mb-1">Filtrar por Evento:</label>
-            <select id="filtro-data-evento" onchange="renderizarDevedores()" class="p-2.5 bg-dark-950 border border-slate-700 rounded-xl text-xs text-amber-400 font-bold w-full outline-none focus:border-amber-400">
-              <option value="">Todas as Datas (Acumulado)</option>
+            <h2 class="text-lg font-extrabold text-white">Histórico de Pagamentos Recebidos</h2>
+            <p class="text-xs text-slate-400">Registro de acertos efetuados com opção de estorno</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="px-3.5 py-2 bg-emerald-950/40 border border-emerald-500/30 rounded-xl">
+              <p class="text-[10px] text-emerald-400 font-bold uppercase">Total Arrecadado</p>
+              <p id="stat-total-arrecadado" class="text-base font-extrabold text-emerald-300 font-mono">R$ 0,00</p>
+            </div>
+            <select id="filtro-cliente-historico" onchange="renderizarHistorico()" class="p-2.5 bg-surface-900 border border-slate-800 rounded-xl text-xs text-slate-200 font-bold outline-none">
+              <option value="">Todos os clientes</option>
             </select>
           </div>
-          <div class="p-3 bg-red-950/50 border border-red-500/30 rounded-xl w-full sm:w-auto">
-            <p class="text-[10px] text-red-400 font-extrabold uppercase tracking-wider">Total a Receber</p>
-            <p id="stat-total-a-receber" class="text-lg font-black text-red-300">R$ 0,00</p>
+        </div>
+        <div id="lista-historico-pagamentos" class="space-y-2"></div>
+      </div>
+
+      <!-- ==================== ABA 6: CLIENTES ==================== -->
+      <div id="aba-clientes" class="hidden h-full overflow-y-auto bg-surface-850 border border-slate-800 rounded-2xl p-4 md:p-6">
+        <h2 class="text-lg font-extrabold text-white mb-4">Gerenciar Amigos / Clientes</h2>
+        <form onsubmit="salvarCliente(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 mb-6 max-w-2xl bg-surface-900 p-3.5 rounded-xl border border-slate-800">
+          <div class="sm:col-span-5">
+            <input type="text" id="input-nome-cliente" placeholder="Nome do amigo (ex: Bruno Silva)" required class="w-full p-2.5 bg-surface-950 border border-slate-800 rounded-lg text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-xs">
           </div>
-        </div>
+          <div class="sm:col-span-4">
+            <input type="tel" id="input-tel-cliente" placeholder="WhatsApp (ex: 43999999999)" class="w-full p-2.5 bg-surface-950 border border-slate-800 rounded-lg text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-xs">
+          </div>
+          <div class="sm:col-span-3 flex gap-2">
+            <select id="select-emoji-cliente" class="p-2 bg-surface-950 border border-slate-800 rounded-lg text-base outline-none"></select>
+            <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-surface-950 font-bold px-3 py-2 rounded-lg text-xs transition-all flex-1">Salvar</button>
+          </div>
+        </form>
+        <ul id="lista-clientes-cadastrados" class="divide-y divide-slate-800 max-w-2xl border border-slate-800 rounded-xl bg-surface-900 overflow-hidden"></ul>
       </div>
-      <div id="lista-saldos-devedores" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
-    </div>
 
-    <!-- ABA 5: HISTÓRICO -->
-    <div id="aba-historico" class="hidden glass-card rounded-2xl p-4 md:p-6">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-amber-500/10 pb-4">
-        <div>
-          <h2 class="text-xl font-extrabold text-amber-400">Histórico de Pagamentos Recebidos</h2>
-          <p class="text-xs text-slate-400 mt-1">Registro de acertos efetuados (com opção de estorno por engano)</p>
-        </div>
-        <select id="filtro-cliente-historico" onchange="renderizarHistorico()" class="p-2.5 bg-dark-950 border border-slate-700 rounded-xl text-xs text-slate-200 font-bold outline-none focus:border-amber-400">
-          <option value="">Todos os clientes</option>
-        </select>
+      <!-- ==================== ABA 7: PRODUTOS ==================== -->
+      <div id="aba-produtos" class="hidden h-full overflow-y-auto bg-surface-850 border border-slate-800 rounded-2xl p-4 md:p-6">
+        <h2 class="text-lg font-extrabold text-white mb-4">Gerenciar Produtos & Custo Unitário</h2>
+        <form onsubmit="salvarProduto(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-2.5 mb-6 max-w-2xl bg-surface-900 p-3.5 rounded-xl border border-slate-800">
+          <input type="text" id="input-nome-prod" placeholder="Nome (Ex: Cerveja)" required class="p-2.5 bg-surface-950 border border-slate-800 rounded-lg text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-xs">
+          <input type="number" step="0.01" id="input-custo-prod" placeholder="Custo (Ex: 2.50)" required class="p-2.5 bg-surface-950 border border-slate-800 rounded-lg text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-xs">
+          <input type="number" step="0.01" id="input-preco-prod" placeholder="Venda (Ex: 6.00)" required class="p-2.5 bg-surface-950 border border-slate-800 rounded-lg text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-xs">
+          <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-surface-950 font-bold px-4 py-2.5 rounded-lg text-xs transition-all">Adicionar Produto</button>
+        </form>
+        <div id="lista-produtos-cadastrados" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div class="p-4 bg-emerald-950/40 border border-emerald-500/30 rounded-2xl">
-          <p class="text-xs text-emerald-400 font-bold uppercase tracking-wider">Total Já Arrecadado</p>
-          <p id="stat-total-arrecadado" class="text-2xl font-black text-emerald-300 mt-1">R$ 0,00</p>
-        </div>
-      </div>
-      <div id="lista-historico-pagamentos" class="space-y-2.5"></div>
-    </div>
 
-    <!-- ABA 6: CLIENTES -->
-    <div id="aba-clientes" class="hidden glass-card rounded-2xl p-4 md:p-6">
-      <h2 class="text-xl font-extrabold text-amber-400 mb-4">Gerenciar Amigos / Clientes</h2>
-      <form onsubmit="salvarCliente(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-6 max-w-2xl">
-        <div class="sm:col-span-5">
-          <input type="text" id="input-nome-cliente" placeholder="Nome do amigo (ex: Bruno Silva)" required class="w-full p-3 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-sm">
-        </div>
-        <div class="sm:col-span-4">
-          <input type="tel" id="input-tel-cliente" placeholder="WhatsApp (ex: 11999999999)" class="w-full p-3 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-sm">
-        </div>
-        <div class="sm:col-span-3 flex gap-2">
-          <select id="select-emoji-cliente" class="p-3 bg-dark-950 border border-slate-700 rounded-xl text-xl outline-none focus:border-amber-400 flex-shrink-0"></select>
-          <button type="submit" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-dark-950 font-bold px-4 py-3 rounded-xl text-sm shadow-md transition-all flex-1">Adicionar</button>
-        </div>
-      </form>
-      <h3 class="font-bold text-slate-300 mb-3 text-sm">Clientes Cadastrados</h3>
-      <ul id="lista-clientes-cadastrados" class="divide-y divide-slate-800/80 max-w-2xl border border-slate-800 rounded-2xl bg-dark-950/50 overflow-hidden"></ul>
-    </div>
-
-    <!-- ABA 7: PRODUTOS -->
-    <div id="aba-produtos" class="hidden glass-card rounded-2xl p-4 md:p-6">
-      <h2 class="text-xl font-extrabold text-amber-400 mb-4">Gerenciar Produtos & Custo Unitário</h2>
-      <form onsubmit="salvarProduto(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6 max-w-xl">
-        <input type="text" id="input-nome-prod" placeholder="Nome (Ex: Cerveja)" required class="p-3 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-sm">
-        <input type="number" step="0.01" id="input-custo-prod" placeholder="Custo (Ex: 2.50)" required class="p-3 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-sm">
-        <input type="number" step="0.01" id="input-preco-prod" placeholder="Venda (Ex: 6.00)" required class="p-3 bg-dark-950 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-500 outline-none focus:border-amber-400 text-sm">
-        <button type="submit" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-dark-950 font-bold px-4 py-3 rounded-xl text-sm shadow-md transition-all">Adicionar</button>
-      </form>
-      <h3 class="font-bold text-slate-300 mb-3 text-sm">Produtos Cadastrados</h3>
-      <div id="lista-produtos-cadastrados" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
-    </div>
-
-  </main>
+    </main>
+  </div>
 
   <script>
-    // SCRIPT DE ATIVAÇÃO DO PWA (APP NATIVO)
-    if ('serviceWorker' in navigator) {
-      const swCode = `
-        self.addEventListener('install', e => self.skipWaiting());
-        self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));
-      `;
-      const blob = new Blob([swCode], { type: 'application/javascript' });
-      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
-    }
-
     const EMOJIS = [
       '😎', '🤠', '🥳', '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', 
       '🙃', '😉', '😇', '😍', '🤩', '😘', '😋', '😜', '🤪', '🤖', '👻', '👽', 
@@ -374,8 +462,41 @@
     };
 
     let clienteAtual = null;
+    let filtroStatusCliente = 'todos';
+    let qtdMultiplicador = 1;
+
+    const NOMES_ABAS = {
+      comandas: 'Comandas',
+      devedores: 'Fiados por Data',
+      lucro: 'Financeiro',
+      compras: 'Gastos & Compras',
+      historico: 'Pagamentos',
+      clientes: 'Clientes',
+      produtos: 'Produtos'
+    };
 
     document.getElementById('input-data-evento').value = new Date().toISOString().split('T')[0];
+
+    function setFiltroStatusCliente(status) {
+      filtroStatusCliente = status;
+      ['todos', 'abertos', 'quitados'].forEach(s => {
+        const el = document.getElementById(`filtro-cli-${s}`);
+        el.className = s === status
+          ? 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-surface-750 text-white transition-all'
+          : 'px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-400 hover:text-slate-200 transition-all';
+      });
+      renderizarTudo();
+    }
+
+    function setQtdMultiplicador(qtd) {
+      qtdMultiplicador = qtd;
+      [1, 2, 3, 6].forEach(q => {
+        const el = document.getElementById(`btn-qtd-${q}`);
+        el.className = q === qtd
+          ? 'px-2 py-0.5 rounded text-[11px] font-extrabold bg-amber-500 text-surface-950 transition-all'
+          : 'px-2 py-0.5 rounded text-[11px] font-bold text-slate-400 hover:text-white transition-all';
+      });
+    }
 
     async function carregarDadosDoSupabase() {
       if (!supabaseClient) {
@@ -447,7 +568,6 @@
 
     function escutarAlteracoesRealtime() {
       if (!supabaseClient) return;
-
       supabaseClient
         .channel('mudancas-comandas')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'comandas' }, () => {
@@ -480,69 +600,102 @@
     function mudarAba(aba) {
       ['comandas', 'lucro', 'compras', 'devedores', 'historico', 'clientes', 'produtos'].forEach(a => {
         document.getElementById(`aba-${a}`).classList.add('hidden');
-        document.getElementById(`btn-${a}`).className = 'px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-dark-800 text-slate-400 hover:text-amber-400 border border-slate-800 flex-shrink-0';
+        const btn = document.getElementById(`btn-${a}`);
+        if (btn) {
+          btn.className = 'nav-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-surface-800 transition-all';
+        }
       });
       document.getElementById(`aba-${aba}`).classList.remove('hidden');
-      document.getElementById(`btn-${aba}`).className = 'px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all bg-gradient-to-r from-amber-500 to-amber-600 text-dark-950 shadow-md shadow-amber-500/20 flex-shrink-0';
+      const activeBtn = document.getElementById(`btn-${aba}`);
+      if (activeBtn) {
+        activeBtn.className = 'nav-item w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all bg-amber-500/15 text-amber-400 border border-amber-500/30';
+      }
+      document.getElementById('header-titulo-aba').innerText = NOMES_ABAS[aba] || 'Comandas';
       renderizarTudo();
     }
 
     function renderizarTudo() {
+      // Atualizar contadores da Sidebar
+      const totalFiadoGeral = Object.values(db.saldos).reduce((acc, s) => acc + (s.total || 0), 0);
+      const qtdDevedores = Object.values(db.saldos).filter(s => (s.total || 0) > 0).length;
+      document.getElementById('sidebar-total-receber').innerText = `R$ ${totalFiadoGeral.toFixed(2).replace('.', ',')}`;
+      document.getElementById('badge-devedores').innerText = qtdDevedores;
+      document.getElementById('badge-clientes').innerText = db.clientes.length;
+      document.getElementById('badge-produtos').innerText = db.produtos.length;
+
+      // Filtrar Clientes
+      const termoCliente = (document.getElementById('busca-cliente-comanda')?.value || '').toLowerCase();
+      const clientesFiltrados = db.clientes.filter(c => {
+        const saldo = (db.saldos[c.nome] && db.saldos[c.nome].total) || 0;
+        const matchNome = c.nome.toLowerCase().includes(termoCliente);
+        if (!matchNome) return false;
+        if (filtroStatusCliente === 'abertos') return saldo > 0;
+        if (filtroStatusCliente === 'quitados') return saldo <= 0;
+        return true;
+      });
+
       const gridClientes = document.getElementById('grid-clientes-emojis');
-      gridClientes.innerHTML = db.clientes.map(c => {
+      gridClientes.innerHTML = clientesFiltrados.map(c => {
         const isSelected = c.nome === clienteAtual;
         const saldoDevTotal = (db.saldos[c.nome] && db.saldos[c.nome].total) || 0;
         
         return `
-          <button onclick="selecionarCliente('${c.nome}')" class="p-2 rounded-xl border flex items-center gap-2 transition-all h-[62px] ${
+          <button onclick="selecionarCliente('${c.nome}')" class="p-2.5 rounded-xl border flex items-center gap-2.5 transition-all text-left ${
             isSelected 
-              ? 'bg-amber-500/10 border-amber-400/80 shadow-lg shadow-amber-500/10 scale-102 ring-1 ring-amber-400/50' 
-              : 'bg-dark-850/80 border-slate-800 hover:border-amber-500/40 hover:bg-dark-800'
+              ? 'bg-amber-500/10 border-amber-500 ring-1 ring-amber-500/40' 
+              : 'bg-surface-800/80 border-slate-800 hover:border-slate-700 hover:bg-surface-800'
           }">
-            <span class="text-2xl flex-shrink-0">${c.emoji || '👤'}</span>
-            <div class="text-left overflow-hidden w-full">
-              <p class="font-bold text-slate-200 text-xs truncate">${c.nome}</p>
+            <span class="text-2xl flex-shrink-0 leading-none">${c.emoji || '👤'}</span>
+            <div class="overflow-hidden min-w-0 flex-1">
+              <p class="font-extrabold text-slate-100 text-[11px] uppercase tracking-tight truncate">${c.nome}</p>
               ${saldoDevTotal > 0 
-                ? `<span class="inline-block px-1.5 py-0.2 bg-red-950 text-red-300 border border-red-500/40 font-extrabold text-[9px] rounded-full">R$ ${saldoDevTotal.toFixed(2)}</span>`
-                : `<span class="text-[10px] text-emerald-400 font-semibold">Quitado</span>`
+                ? `<p class="font-mono font-bold text-red-400 text-[11px] tabular-nums mt-0.5">R$ ${saldoDevTotal.toFixed(2).replace('.', ',')}</p>`
+                : `<p class="text-emerald-400 font-semibold text-[11px] mt-0.5">Quitado</p>`
               }
             </div>
           </button>
         `;
       }).join('');
 
-      document.getElementById('lista-produtos-cards').innerHTML = db.produtos.map(p => `
-        <button onclick="adicionarItemDirecto(${p.id})" class="p-2.5 bg-dark-850/80 border border-slate-800 hover:border-amber-500/50 rounded-xl flex flex-col justify-between items-start active:scale-95 transition-all h-16 shadow-md">
-          <span class="font-bold text-slate-200 text-xs text-left line-clamp-1">${p.nome}</span>
-          <span class="text-amber-400 font-black text-xs">R$ ${parseFloat(p.preco).toFixed(2)}</span>
+      // Filtrar Produtos
+      const termoProd = (document.getElementById('busca-produto-comanda')?.value || '').toLowerCase();
+      const produtosFiltrados = db.produtos.filter(p => p.nome.toLowerCase().includes(termoProd));
+
+      document.getElementById('lista-produtos-cards').innerHTML = produtosFiltrados.map(p => `
+        <button onclick="adicionarItemDirecto(${p.id})" class="p-2.5 bg-surface-800/80 hover:bg-surface-800 border border-slate-800 hover:border-amber-500/50 rounded-xl flex flex-col justify-between items-start active:scale-95 transition-all text-left group">
+          <div class="w-full flex justify-between items-start gap-1">
+            <span class="font-bold text-slate-200 text-xs line-clamp-1">${p.nome}</span>
+            <span class="w-5 h-5 rounded-md bg-surface-900 border border-slate-700 group-hover:border-amber-500/50 group-hover:text-amber-400 flex items-center justify-center text-slate-400 text-xs font-bold flex-shrink-0">+</span>
+          </div>
+          <span class="text-amber-400 font-mono font-bold text-xs tabular-nums mt-2">R$ ${parseFloat(p.preco).toFixed(2).replace('.', ',')}</span>
         </button>
       `).join('');
 
       document.getElementById('lista-clientes-cadastrados').innerHTML = db.clientes.map(c => `
-        <li class="p-3.5 flex justify-between items-center text-sm font-medium bg-dark-900/60">
+        <li class="p-3 flex justify-between items-center text-xs">
           <div class="flex items-center gap-2.5">
-            <span class="text-2xl">${c.emoji}</span>
+            <span class="text-xl">${c.emoji}</span>
             <div>
               <span class="font-bold text-slate-100 block">${c.nome}</span>
-              ${c.telefone ? `<span class="text-xs text-slate-400 flex items-center gap-1">📱 ${c.telefone}</span>` : '<span class="text-[10px] text-slate-500 italic">Sem telefone</span>'}
+              ${c.telefone ? `<span class="text-[11px] text-slate-400">${c.telefone}</span>` : '<span class="text-[10px] text-slate-600 italic">Sem telefone</span>'}
             </div>
           </div>
-          <div class="flex gap-2">
-            <button onclick="editarCliente('${c.id}')" class="text-xs text-blue-400 hover:bg-blue-950 px-3 py-1.5 rounded-lg font-bold border border-blue-500/30">✏️ Editar</button>
-            <button onclick="removerCliente('${c.id}')" class="text-xs text-red-400 hover:bg-red-950 px-3 py-1.5 rounded-lg font-bold border border-red-500/30">🗑️ Excluir</button>
+          <div class="flex gap-1.5">
+            <button onclick="editarCliente('${c.id}')" class="text-xs text-blue-400 hover:bg-blue-950/60 px-2.5 py-1 rounded-lg font-semibold border border-blue-500/20">Editar</button>
+            <button onclick="removerCliente('${c.id}')" class="text-xs text-red-400 hover:bg-red-950/60 px-2.5 py-1 rounded-lg font-semibold border border-red-500/20">Excluir</button>
           </div>
         </li>
       `).join('');
 
       document.getElementById('lista-produtos-cadastrados').innerHTML = db.produtos.map(p => `
-        <div class="p-3.5 border border-slate-800 rounded-xl flex justify-between items-center bg-dark-850/70 text-sm">
+        <div class="p-3 border border-slate-800 rounded-xl flex justify-between items-center bg-surface-900 text-xs">
           <div>
             <span class="font-bold text-slate-200 block">${p.nome}</span>
-            <span class="text-xs text-slate-400">Custo: R$ ${parseFloat(p.custo || 0).toFixed(2)} | Venda: R$ ${parseFloat(p.preco).toFixed(2)}</span>
+            <span class="text-[11px] text-slate-400">Custo: R$ ${parseFloat(p.custo || 0).toFixed(2)} • Venda: R$ ${parseFloat(p.preco).toFixed(2)}</span>
           </div>
           <div class="flex gap-1.5">
-            <button onclick="editarProduto(${p.id})" class="text-xs text-blue-400 hover:bg-blue-950 px-2 py-1 rounded-lg font-bold border border-blue-500/30">✏️</button>
-            <button onclick="removerProduto(${p.id})" class="text-xs text-red-400 hover:bg-red-950 px-2 py-1 rounded-lg font-bold border border-red-500/30">🗑️</button>
+            <button onclick="editarProduto(${p.id})" class="text-xs text-blue-400 hover:bg-blue-950 px-2 py-1 rounded-lg border border-blue-500/20">✏️</button>
+            <button onclick="removerProduto(${p.id})" class="text-xs text-red-400 hover:bg-red-950 px-2 py-1 rounded-lg border border-red-500/20">🗑️</button>
           </div>
         </div>
       `).join('');
@@ -557,48 +710,44 @@
 
     function selecionarCliente(nome) {
       clienteAtual = nome;
-      const clienteObj = db.clientes.find(c => c.nome === nome);
-      const emoji = clienteObj ? clienteObj.emoji : '👤';
-      const saldoDevTotal = (db.saldos[nome] && db.saldos[nome].total) || 0;
-
-      document.getElementById('nome-cliente-comanda').innerHTML = `
-        <span class="text-base">${emoji}</span> <span>${nome}</span>
-      `;
-      document.getElementById('saldo-devedor-cliente').innerText = `Saldo Acumulado Total: R$ ${saldoDevTotal.toFixed(2)}`;
       renderizarTudo();
     }
 
     async function adicionarItemDirecto(produtoId) {
-      if (!clienteAtual) return alert('Selecione um amigo no painel antes de clicar no produto!');
+      if (!clienteAtual) return alert('Selecione um amigo no painel antes de lançar o produto!');
 
       const prod = db.produtos.find(p => p.id === produtoId);
       if (!prod) return;
 
       const dataIso = document.getElementById('input-data-evento').value;
+      const qtd = qtdMultiplicador || 1;
+      const valorTotalItem = parseFloat(prod.preco) * qtd;
+      const descricaoItem = `${qtd}x ${prod.nome}`;
 
       if (supabaseClient) {
         const { error } = await supabaseClient.from('comandas').insert([{
           cliente_nome: clienteAtual,
           produto_id: prod.id,
-          produto_nome: `1x ${prod.nome}`,
-          valor: prod.preco,
+          produto_nome: descricaoItem,
+          valor: valorTotalItem,
           data_evento: dataIso
         }]);
 
         if (error) return alert('Erro ao registrar item no Supabase: ' + error.message);
+        setQtdMultiplicador(1);
         carregarDadosDoSupabase();
       } else {
-        const precoVal = parseFloat(prod.preco);
         const dataBr = formatarDataBR(dataIso);
         if (!db.saldos[clienteAtual]) db.saldos[clienteAtual] = { total: 0, historico: [] };
         db.saldos[clienteAtual].historico.unshift({
           idItem: Date.now(),
           data: dataBr,
           dataIso: dataIso,
-          descricao: `1x ${prod.nome}`,
-          valor: precoVal
+          descricao: descricaoItem,
+          valor: valorTotalItem
         });
-        db.saldos[clienteAtual].total += precoVal;
+        db.saldos[clienteAtual].total += valorTotalItem;
+        setQtdMultiplicador(1);
         salvarLocal();
         renderizarTudo();
       }
@@ -628,31 +777,51 @@
     function renderizarComanda() {
       const conteinerHistorico = document.getElementById('historico-debitos-cliente');
       const labelTotal = document.getElementById('total-hoje');
+      const nomeHeader = document.getElementById('nome-cliente-comanda');
+      const infoHeader = document.getElementById('info-cliente-comanda');
+      const avatarHeader = document.getElementById('avatar-cliente-comanda');
+      const subtituloConsumo = document.getElementById('subtitulo-lancar-consumo');
 
       if (!clienteAtual) {
-        conteinerHistorico.innerHTML = '<p class="text-slate-500 text-xs italic">Selecione um amigo acima.</p>';
+        avatarHeader.innerText = '👤';
+        nomeHeader.innerText = 'Selecione um amigo';
+        infoHeader.innerText = '0 lançamentos';
+        subtituloConsumo.innerText = 'Selecione um amigo acima para lançar itens';
+        conteinerHistorico.innerHTML = `
+          <div class="h-full flex flex-col items-center justify-center text-center py-8 text-slate-500">
+            <i data-lucide="receipt" class="w-8 h-8 mb-2 opacity-30"></i>
+            <p class="text-xs">Toque em um amigo à esquerda para abrir a comanda.</p>
+          </div>`;
         labelTotal.innerText = 'R$ 0,00';
         return;
       }
 
+      const clienteObj = db.clientes.find(c => c.nome === clienteAtual);
       const historico = (db.saldos[clienteAtual] && db.saldos[clienteAtual].historico) || [];
       const totalAcumulado = (db.saldos[clienteAtual] && db.saldos[clienteAtual].total) || 0;
 
-      labelTotal.innerText = `R$ ${totalAcumulado.toFixed(2)}`;
+      avatarHeader.innerText = clienteObj?.emoji || '👤';
+      nomeHeader.innerText = clienteAtual;
+      infoHeader.innerText = `${historico.length} ${historico.length === 1 ? 'lançamento' : 'lançamentos'}${clienteObj?.telefone ? ` • ${clienteObj.telefone}` : ''}`;
+      subtituloConsumo.innerHTML = `Toque no item para adicionar na comanda de <b class="text-amber-400">${clienteAtual}</b>`;
+      labelTotal.innerText = `R$ ${totalAcumulado.toFixed(2).replace('.', ',')}`;
 
       if (historico.length === 0) {
-        conteinerHistorico.innerHTML = '<p class="text-slate-500 text-xs italic">Nenhum débito ou produto consumido.</p>';
+        conteinerHistorico.innerHTML = `
+          <div class="h-full flex flex-col items-center justify-center text-center py-8 text-slate-500">
+            <p class="text-xs italic">Conta quitada! Nenhum item em aberto.</p>
+          </div>`;
       } else {
         conteinerHistorico.innerHTML = historico.map(h => `
-          <div class="flex justify-between items-center p-2 bg-dark-850/80 rounded-xl border border-slate-800 text-[11px] hover:border-amber-500/30 transition-all">
-            <div class="overflow-hidden pr-2">
-              <span class="font-extrabold text-amber-400 text-[10px] block">${h.data}</span>
-              <span class="text-slate-200 font-bold truncate block">${h.descricao}</span>
+          <div class="py-2.5 flex justify-between items-center gap-2 hover:bg-surface-800/40 px-1 transition-all">
+            <div class="min-w-0">
+              <p class="text-xs font-bold text-slate-100 truncate">${h.descricao}</p>
+              <p class="text-[10px] text-slate-500 font-medium">${h.data}</p>
             </div>
-            <div class="flex items-center gap-2 flex-shrink-0">
-              <span class="font-black text-red-400 text-xs">R$ ${h.valor.toFixed(2)}</span>
-              <button onclick="estornarItemConta(${h.idItem || 0})" class="p-1 rounded-lg bg-red-950/70 hover:bg-red-900 text-red-400 border border-red-500/30" title="Cancelar este item">
-                🗑️
+            <div class="flex items-center gap-3 flex-shrink-0">
+              <span class="font-mono font-bold text-slate-200 text-xs tabular-nums">R$ ${h.valor.toFixed(2).replace('.', ',')}</span>
+              <button onclick="estornarItemConta(${h.idItem || 0})" class="text-slate-500 hover:text-red-400 transition-colors p-1" title="Remover lançamento">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
               </button>
             </div>
           </div>
@@ -692,13 +861,12 @@
       const pgt = db.pagamentos.find(p => p.id === idPagamento);
       if (!pgt) return;
 
-      if (confirm(`Deseja CANCELAR/ESTORNAR o pagamento de R$ ${pgt.valor.toFixed(2)} de ${pgt.cliente}?\nO valor voltará para a comanda do cliente.`)) {
+      if (confirm(`Deseja CANCELAR/ESTORNAR o pagamento de R$ ${pgt.valor.toFixed(2)} de ${pgt.cliente}?`)) {
         if (supabaseClient) {
           await supabaseClient.from('vendas').delete().eq('id', idPagamento);
         }
-
         salvarLocal();
-        alert(`Estorno de R$ ${pgt.valor.toFixed(2)} realizado com sucesso!`);
+        alert(`Estorno de R$ ${pgt.valor.toFixed(2)} realizado!`);
         carregarDadosDoSupabase();
       }
     }
@@ -722,17 +890,16 @@
       texto += `\n_Favor realizar o pagamento via PIX quando possível! Obrigado!_`;
 
       navigator.clipboard.writeText(texto).then(() => {
-        alert('Extrato detalhado por datas copiado! Abra o WhatsApp e cole.');
+        alert('Extrato detalhado copiado! Abra o WhatsApp e cole.');
       });
     }
 
     function cobrarWhatsApp(nomeCliente, valorPendente) {
       const clienteObj = db.clientes.find(c => c.nome === nomeCliente);
-      
       let telefone = clienteObj ? clienteObj.telefone : '';
       
       if (!telefone) {
-        telefone = prompt(`Digite o número do WhatsApp de ${nomeCliente} (ex: 11999999999):`);
+        telefone = prompt(`Digite o número do WhatsApp de ${nomeCliente} (ex: 43999999999):`);
         if (!telefone) return;
       }
 
@@ -742,9 +909,7 @@
       }
 
       const mensagem = `Cobrança do Bar Informa: seu débito esta em aberto no valor de R$ ${valorPendente.toFixed(2)}\nCaso ja tenha quitado essa pendência favor ignorar mensagem\nMensagem automática, chave 43991411006`;
-
-      const link = `https://wa.me/${numLimpo}?text=${encodeURIComponent(mensagem)}`;
-      window.open(link, '_blank');
+      window.open(`https://wa.me/${numLimpo}?text=${encodeURIComponent(mensagem)}`, '_blank');
     }
 
     function renderizarLucro() {
@@ -764,11 +929,11 @@
       elLucro.innerText = `R$ ${lucroLiquido.toFixed(2)}`;
 
       if (lucroLiquido >= 0) {
-        cardLucro.className = "p-5 bg-gradient-to-r from-emerald-950/80 to-dark-850 border-2 border-emerald-500/50 rounded-2xl mb-6 flex justify-between items-center shadow-2xl";
-        elLucro.className = "text-3xl font-black text-emerald-300";
+        cardLucro.className = "p-4 bg-emerald-950/30 border border-emerald-500/40 rounded-xl mb-6 flex justify-between items-center";
+        elLucro.className = "text-2xl font-extrabold text-emerald-300 font-mono";
       } else {
-        cardLucro.className = "p-5 bg-gradient-to-r from-red-950/80 to-dark-850 border-2 border-red-500/50 rounded-2xl mb-6 flex justify-between items-center shadow-2xl";
-        elLucro.className = "text-3xl font-black text-red-400";
+        cardLucro.className = "p-4 bg-red-950/30 border border-red-500/40 rounded-xl mb-6 flex justify-between items-center";
+        elLucro.className = "text-2xl font-extrabold text-red-400 font-mono";
       }
 
       document.getElementById('tabela-margem-produtos').innerHTML = db.produtos.map(p => {
@@ -778,14 +943,14 @@
         const margemPct = preco > 0 ? ((lucroItem / preco) * 100).toFixed(0) : 0;
 
         return `
-          <div class="p-3.5 border border-slate-800 rounded-2xl bg-dark-850/70 text-xs flex justify-between items-center">
+          <div class="p-3 border border-slate-800 rounded-xl bg-surface-900 text-xs flex justify-between items-center">
             <div>
-              <span class="font-bold text-slate-200 text-sm block">${p.nome}</span>
-              <span class="text-slate-400">Custo: R$ ${custo.toFixed(2)} | Venda: R$ ${preco.toFixed(2)}</span>
+              <span class="font-bold text-slate-200 block">${p.nome}</span>
+              <span class="text-[11px] text-slate-400">Custo: R$ ${custo.toFixed(2)} • Venda: R$ ${preco.toFixed(2)}</span>
             </div>
             <div class="text-right">
-              <span class="font-black text-emerald-400 block text-sm">+R$ ${lucroItem.toFixed(2)}</span>
-              <span class="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-500/30 font-bold px-2 py-0.5 rounded-full">${margemPct}% margem</span>
+              <span class="font-mono font-bold text-emerald-400 block">+R$ ${lucroItem.toFixed(2)}</span>
+              <span class="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-500/30 font-bold px-2 py-0.5 rounded-full">${margemPct}%</span>
             </div>
           </div>
         `;
@@ -795,8 +960,7 @@
     function calcularTotalItemCompra() {
       const qtd = parseInt(document.getElementById('input-qtd-compra').value) || 0;
       const unit = parseFloat(document.getElementById('input-valor-unit-compra').value) || 0;
-      const total = qtd * unit;
-      document.getElementById('label-total-item-compra').innerText = `R$ ${total.toFixed(2)}`;
+      document.getElementById('label-total-item-compra').innerText = `R$ ${(qtd * unit).toFixed(2)}`;
     }
 
     async function salvarCompra(e) {
@@ -816,16 +980,9 @@
             valor: totalItem,
             data_compra: dataHoje
           }]);
-          if (error) return alert('Erro ao salvar compra no Supabase: ' + error.message);
+          if (error) return alert('Erro ao salvar compra: ' + error.message);
         } else {
-          db.compras.unshift({
-            id: Date.now(),
-            descricao: desc,
-            quantidade: qtd,
-            valorUnitario: valUnit,
-            valor: totalItem,
-            data: formatarDataBR(dataHoje)
-          });
+          db.compras.unshift({ id: Date.now(), descricao: desc, quantidade: qtd, valorUnitario: valUnit, valor: totalItem, data: formatarDataBR(dataHoje) });
           salvarLocal();
         }
 
@@ -855,19 +1012,19 @@
       document.getElementById('stat-total-compras-geral').innerText = `R$ ${totalGeral.toFixed(2)}`;
 
       if (db.compras.length === 0) {
-        conteiner.innerHTML = '<p class="text-slate-500 text-xs italic">Nenhuma compra/gasto registrado ainda.</p>';
+        conteiner.innerHTML = '<p class="text-slate-500 text-xs italic">Nenhuma compra registrada.</p>';
         return;
       }
 
       conteiner.innerHTML = db.compras.map(c => `
-        <div class="p-3.5 border border-slate-800 rounded-xl bg-dark-850/70 flex justify-between items-center text-xs">
+        <div class="p-3 border border-slate-800 rounded-xl bg-surface-900 flex justify-between items-center text-xs">
           <div>
-            <span class="font-bold text-slate-200 text-sm block">${c.descricao}</span>
-            <span class="text-slate-400">${c.quantidade || 1}x R$ ${(c.valorUnitario || c.valor).toFixed(2)} • Comprado em ${c.data}</span>
+            <span class="font-bold text-slate-200 block">${c.descricao}</span>
+            <span class="text-[11px] text-slate-400">${c.quantidade || 1}x R$ ${(c.valorUnitario || c.valor).toFixed(2)} • ${c.data}</span>
           </div>
           <div class="flex items-center gap-3">
-            <span class="font-black text-red-400 text-sm">R$ ${parseFloat(c.valor).toFixed(2)}</span>
-            <button onclick="removerCompra(${c.id})" class="text-red-400 hover:text-red-300">🗑️</button>
+            <span class="font-mono font-bold text-red-400">R$ ${parseFloat(c.valor).toFixed(2)}</span>
+            <button onclick="removerCompra(${c.id})" class="text-slate-500 hover:text-red-400">🗑️</button>
           </div>
         </div>
       `).join('');
@@ -879,28 +1036,19 @@
 
       let datasUnicas = new Set();
       Object.values(db.saldos).forEach(s => {
-        if (s.historico) {
-          s.historico.forEach(h => { if(h.dataIso) datasUnicas.add(h.dataIso); });
-        }
+        if (s.historico) s.historico.forEach(h => { if(h.dataIso) datasUnicas.add(h.dataIso); });
       });
 
       let opcoesDataHTML = '<option value="">Todas as Datas (Acumulado)</option>';
       Array.from(datasUnicas).sort().reverse().forEach(dIso => {
-        const dBr = formatarDataBR(dIso);
-        opcoesDataHTML += `<option value="${dIso}" ${dIso === dataFiltroSelecionada ? 'selected' : ''}>Evento de ${dBr}</option>`;
+        opcoesDataHTML += `<option value="${dIso}" ${dIso === dataFiltroSelecionada ? 'selected' : ''}>Evento de ${formatarDataBR(dIso)}</option>`;
       });
       selectFiltroData.innerHTML = opcoesDataHTML;
 
       const conteiner = document.getElementById('lista-saldos-devedores');
-      
       const devedores = db.clientes.map(c => {
         const historicoCliente = (db.saldos[c.nome] && db.saldos[c.nome].historico) || [];
-        
-        let historicoFiltrado = historicoCliente;
-        if (dataFiltroSelecionada) {
-          historicoFiltrado = historicoCliente.filter(h => h.dataIso === dataFiltroSelecionada);
-        }
-
+        const historicoFiltrado = dataFiltroSelecionada ? historicoCliente.filter(h => h.dataIso === dataFiltroSelecionada) : historicoCliente;
         const saldoFiltrado = historicoFiltrado.reduce((acc, h) => acc + h.valor, 0);
 
         return {
@@ -914,32 +1062,31 @@
       document.getElementById('stat-total-a-receber').innerText = `R$ ${totalGeralAReceber.toFixed(2)}`;
 
       if (devedores.length === 0) {
-        conteiner.innerHTML = '<p class="text-slate-500 text-center py-8 col-span-full text-xs">Nenhuma pendência encontrada para este filtro! 🎉</p>';
+        conteiner.innerHTML = '<p class="text-slate-500 text-center py-8 col-span-full text-xs">Nenhuma pendência encontrada! 🎉</p>';
         return;
       }
 
       conteiner.innerHTML = devedores.map(d => `
-        <div class="border border-slate-800 rounded-2xl p-4 bg-dark-850/80 space-y-3 shadow-lg">
-          <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
-            <span class="font-bold text-slate-100 text-base flex items-center gap-2">
-              <span class="text-2xl">${d.emoji}</span> ${d.nome}
+        <div class="border border-slate-800 rounded-xl p-3.5 bg-surface-900 space-y-2.5">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+            <span class="font-bold text-slate-100 text-xs flex items-center gap-2">
+              <span class="text-xl">${d.emoji}</span> ${d.nome}
             </span>
-            <span class="font-black text-red-400 text-lg">R$ ${d.saldo.toFixed(2)}</span>
+            <span class="font-mono font-extrabold text-red-400 text-sm">R$ ${d.saldo.toFixed(2)}</span>
           </div>
-          <p class="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Detalhamento no Evento:</p>
-          <div class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+          <div class="space-y-1 max-h-32 overflow-y-auto pr-1">
             ${d.historico.map(h => `
-              <div class="flex justify-between text-xs text-slate-300">
-                <span><b class="text-amber-300/80">${h.data}</b>: ${h.descricao}</span>
-                <span class="font-bold text-slate-200">R$ ${h.valor.toFixed(2)}</span>
+              <div class="flex justify-between text-[11px] text-slate-400">
+                <span><b class="text-slate-300">${h.data}</b>: ${h.descricao}</span>
+                <span class="font-mono text-slate-300">R$ ${h.valor.toFixed(2)}</span>
               </div>
             `).join('')}
           </div>
           <div class="grid grid-cols-2 gap-2 pt-1">
-            <button onclick="cobrarWhatsApp('${d.nome}', ${d.saldo})" class="py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1">
-              <span>💬</span> Cobrar Zap
+            <button onclick="cobrarWhatsApp('${d.nome}', ${d.saldo})" class="py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[11px] transition-all">
+              💬 Cobrar Zap
             </button>
-            <button onclick="selecionarCliente('${d.nome}'); mudarAba('comandas');" class="py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 text-dark-950 font-bold rounded-xl text-xs shadow-md transition-all">
+            <button onclick="selecionarCliente('${d.nome}'); mudarAba('comandas');" class="py-1.5 bg-amber-500 hover:bg-amber-400 text-surface-950 font-bold rounded-lg text-[11px] transition-all">
               Abrir Conta
             </button>
           </div>
@@ -954,28 +1101,26 @@
       selectFiltro.innerHTML = '<option value="">Todos os clientes</option>' + 
         db.clientes.map(c => `<option value="${c.nome}" ${c.nome === valFiltro ? 'selected' : ''}>${c.nome}</option>`).join('');
 
-      let pgtsFiltrados = db.pagamentos;
-      if (valFiltro) pgtsFiltrados = pgtsFiltrados.filter(p => p.cliente === valFiltro);
-
+      let pgtsFiltrados = valFiltro ? db.pagamentos.filter(p => p.cliente === valFiltro) : db.pagamentos;
       const totalArrecadado = pgtsFiltrados.reduce((acc, p) => acc + (parseFloat(p.valor) || 0), 0);
       document.getElementById('stat-total-arrecadado').innerText = `R$ ${totalArrecadado.toFixed(2)}`;
 
       const conteiner = document.getElementById('lista-historico-pagamentos');
       if (pgtsFiltrados.length === 0) {
-        conteiner.innerHTML = '<p class="text-slate-500 text-center py-6 text-xs">Nenhum pagamento registrado ainda.</p>';
+        conteiner.innerHTML = '<p class="text-slate-500 text-center py-6 text-xs">Nenhum pagamento registrado.</p>';
         return;
       }
 
       conteiner.innerHTML = pgtsFiltrados.map(p => `
-        <div class="p-3.5 border border-slate-800 rounded-xl bg-dark-850/80 flex justify-between items-center text-xs shadow-md">
+        <div class="p-3 border border-slate-800 rounded-xl bg-surface-900 flex justify-between items-center text-xs">
           <div>
-            <span class="font-bold text-slate-100 text-sm block">${p.cliente}</span>
-            <span class="text-slate-400">${p.data} • Pago via <b class="text-amber-400/90">${p.formaPagamento}</b></span>
+            <span class="font-bold text-slate-100 block">${p.cliente}</span>
+            <span class="text-[11px] text-slate-400">${p.data} • Via <b class="text-amber-400">${p.formaPagamento}</b></span>
           </div>
           <div class="flex items-center gap-3">
-            <span class="font-black text-emerald-400 text-base">R$ ${parseFloat(p.valor).toFixed(2)}</span>
-            <button onclick="estornarPagamento(${p.id})" class="text-xs bg-red-950/70 hover:bg-red-900 text-red-300 font-bold px-2.5 py-1.5 rounded-lg border border-red-500/30 transition-all" title="Cancelar este pagamento">
-              ❌ Estornar
+            <span class="font-mono font-bold text-emerald-400 text-sm">R$ ${parseFloat(p.valor).toFixed(2)}</span>
+            <button onclick="estornarPagamento(${p.id})" class="text-[11px] bg-red-950/60 hover:bg-red-900 text-red-300 font-bold px-2.5 py-1 rounded-lg border border-red-500/20">
+              Estornar
             </button>
           </div>
         </div>
@@ -997,7 +1142,7 @@
 
         if (supabaseClient) {
           const { error } = await supabaseClient.from('clientes').insert([{ nome, telefone, emoji }]);
-          if (error) return alert('Erro ao cadastrar cliente no Supabase: ' + error.message);
+          if (error) return alert('Erro ao cadastrar cliente: ' + error.message);
         } else {
           db.clientes.push({ id: String(Date.now()), nome, telefone, emoji });
           salvarLocal();
@@ -1031,7 +1176,6 @@
           db.saldos[nomeAtualizado] = db.saldos[antigo];
           delete db.saldos[antigo];
         }
-        
         salvarLocal();
         carregarDadosDoSupabase();
       }
@@ -1046,7 +1190,6 @@
         } else {
           db.clientes = db.clientes.filter(c => String(c.id) !== String(id));
         }
-
         delete db.saldos[cliente.nome];
         salvarLocal();
         carregarDadosDoSupabase();
@@ -1062,12 +1205,11 @@
       if (nome && preco) {
         if (supabaseClient) {
           const { error } = await supabaseClient.from('produtos').insert([{ nome, custo, preco }]);
-          if (error) return alert('Erro ao cadastrar produto no Supabase: ' + error.message);
+          if (error) return alert('Erro ao cadastrar produto: ' + error.message);
         } else {
           db.produtos.push({ id: Date.now(), nome, custo, preco });
           salvarLocal();
         }
-
         document.getElementById('input-nome-prod').value = '';
         document.getElementById('input-custo-prod').value = '';
         document.getElementById('input-preco-prod').value = '';
@@ -1079,16 +1221,11 @@
       const prod = db.produtos.find(p => p.id === id);
       if (!prod) return;
       const novoNome = prompt('Nome:', prod.nome);
-      const novoCusto = prompt('Custo (Ex: 2.50):', prod.custo || 0);
-      const novoPreco = prompt('Preço de Venda (Ex: 6.00):', prod.preco);
+      const novoCusto = prompt('Custo:', prod.custo || 0);
+      const novoPreco = prompt('Preço de Venda:', prod.preco);
 
       if (novoNome && novoPreco) {
-        const payload = {
-          nome: novoNome.trim(),
-          custo: parseFloat(novoCusto) || 0,
-          preco: parseFloat(novoPreco)
-        };
-
+        const payload = { nome: novoNome.trim(), custo: parseFloat(novoCusto) || 0, preco: parseFloat(novoPreco) };
         if (supabaseClient) {
           await supabaseClient.from('produtos').update(payload).eq('id', id);
         } else {
@@ -1097,7 +1234,6 @@
           prod.preco = payload.preco;
           salvarLocal();
         }
-
         carregarDadosDoSupabase();
       }
     }
