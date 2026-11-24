@@ -1,5 +1,5 @@
 {
-  "name": "Vendas de Domingo - Club Deluxe",
+  "name": "Bar do Robinho",
   "short_name": "Vendas Domingo",
   "start_url": "./index.html",
   "display": "standalone",
@@ -7,13 +7,13 @@
   "theme_color": "#0a0c10",
   "icons": [
     {
-      "src": "./logo.png",
+      "src": "./logo.jpg",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "./logo.png",
+      "src": "./logo.jpg",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
